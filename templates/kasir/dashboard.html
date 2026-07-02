@@ -1,0 +1,63 @@
+{% extends "kasir/layout.html" %}
+
+{% block title %}Beranda Karyawan - Smart Wash Laundry{% endblock %}
+{% block page_title %}Beranda{% endblock %}
+
+{% block content %}
+<section class="sw-kasir-welcome">
+    <h2>Selamat Datang, {{ session.get("nama", "Rina") }}!</h2>
+    <a href="{{ url_for('karyawan.transaksi') }}" class="sw-kasir-new-btn"><i class="bi bi-plus-lg"></i> Buat Transaksi Baru</a>
+</section>
+
+<section class="sw-kasir-summary">
+    <article class="sw-kasir-status-card accent-orange">
+        <span class="summary-icon"><i class="bi bi-hourglass-split"></i></span>
+        <div>
+            <h3>Menunggu Antrian</h3>
+            <p><strong>{{ counts.queue }}</strong> Nota</p>
+        </div>
+    </article>
+    <article class="sw-kasir-status-card accent-blue">
+        <span class="summary-icon"><i class="bi bi-basket-fill"></i></span>
+        <div>
+            <h3>Sedang Dicuci</h3>
+            <p><strong>{{ counts.wash }}</strong> Nota</p>
+        </div>
+    </article>
+    <article class="sw-kasir-status-card accent-green">
+        <span class="summary-icon"><i class="bi bi-check-lg"></i></span>
+        <div>
+            <h3>Siap Diambil</h3>
+            <p><strong>{{ counts.ready }}</strong> Nota</p>
+        </div>
+    </article>
+</section>
+
+<section class="sw-kasir-panel">
+    <header class="sw-kasir-panel-title"><i class="bi bi-pin-angle-fill text-danger"></i> Cucian Aktif</header>
+    <div class="table-responsive">
+        <table class="sw-kasir-table">
+            <thead>
+                <tr>
+                    <th>ID NOTA</th>
+                    <th>PELANGGAN</th>
+                    <th>LAYANAN</th>
+                    <th>STATUS CUCIAN</th>
+                    <th>PERBARUI STATUS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td><a href="#">{{ order.id }}</a></td>
+                    <td>{{ order.pelanggan }}</td>
+                    <td>{{ order.layanan }}</td>
+                    <td><span class="sw-kasir-badge {{ order.status_class }}">{{ order.status }}</span></td>
+                    <td><button class="sw-kasir-action {{ order.status_class }}" type="button">{{ order.action }} <i class="bi {{ order.action_icon }}"></i></button></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

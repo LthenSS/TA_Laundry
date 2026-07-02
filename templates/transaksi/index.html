@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Daftar Transaksi - Smart Wash Laundry{% endblock %}
+
+{% block content %}
+<div class="sw-page-header">
+    <h1 class="sw-page-title">Daftar Transaksi</h1>
+    <a href="{{ url_for('transaksi.buat') }}" class="sw-btn-info"><i class="bi bi-plus-lg"></i> Transaksi Baru</a>
+</div>
+
+<div class="sw-filter-bar">
+    <form method="get" class="d-flex gap-2">
+        <select class="form-select" style="max-width: 200px;" name="status">
+            <option value="">Semua Status</option>
+            <option value="Menunggu" {% if status_filter == 'Menunggu' %}selected{% endif %}>Menunggu</option>
+            <option value="Diproses" {% if status_filter == 'Diproses' %}selected{% endif %}>Diproses</option>
+            <option value="Selesai" {% if status_filter == 'Selesai' %}selected{% endif %}>Selesai</option>
+            <option value="Diambil" {% if status_filter == 'Diambil' %}selected{% endif %}>Diambil</option>
+        </select>
+        <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+    </form>
+</div>
+
+<section class="sw-table-card">
+    <div class="table-responsive">
+        <table class="sw-table">
+            <thead>
+                <tr>
+                    <th>NO</th>
+                    <th>ID TRANSAKSI</th>
+                    <th>TANGGAL</th>
+                    <th>MEMBER</th>
+                    <th>TOTAL</th>
+                    <th>STATUS</th>
+                    <th>PEMBAYARAN</th>
+                    <th>AKSI</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transaksi in data_transaksi.items %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td class="text-primary fw-bold">{{ transaksi.format_id() }}</td>
+                    <td>{{ transaksi.tanggal_transaksi.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td>{{ transaksi.pelanggan.nama if transaksi.pelanggan else '-' }}</td>
+                    <td class="text-end fw-bold">Rp {{ "{:,.0f}".format(float(transaksi.total_bayar)) }}</td>
+                    <td>
+                        {% if transaksi.status_transaksi == 'Menunggu' %}
+                            <span class="sw-status sw-status-queue">{{ transaksi.status_transaksi }}</span>
+                        {% elif transaksi.status_transaksi == 'Diproses' %}
+                            <span class="sw-status sw-status-wash">{{ transaksi.status_transaksi }}</span>
+                        {% elif transaksi.status_transaksi == 'Selesai' %}
+                            <span class="sw-status sw-status-ready">{{ transaksi.status_transaksi }}</span>
+                        {% elif transaksi.status_transaksi == 'Diambil' %}
+                            <span class="sw-status sw-status-done">{{ transaksi.status_transaksi }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if transaksi.pembayaran %}
+                            {% if transaksi.pembayaran.status_pembayaran == 'Lunas' %}
+                                <span class="badge bg-success">Lunas</span>
+                            {% else %}
+                                <span class="badge bg-warning">Belum Bayar</span>
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('transaksi.detail', id_transaksi=transaksi.id_transaksi) }}" class="sw-icon-btn sw-icon-view" title="Lihat Detail"><i class="bi bi-eye-fill"></i></a>
+                        <a href="{{ url_for('transaksi.edit', id_transaksi=transaksi.id_transaksi) }}" class="sw-icon-btn sw-icon-edit" title="Edit"><i class="bi bi-pencil-fill"></i></a>
+                        <form method="post" action="{{ url_for('transaksi.hapus', id_transaksi=transaksi.id_transaksi) }}" class="d-inline" onsubmit="return confirm('Hapus transaksi ini?')">
+                            <button type="submit" class="sw-icon-btn sw-icon-delete" title="Hapus"><i class="bi bi-trash-fill"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-5">Belum ada data transaksi.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- Pagination -->
+{% if data_transaksi.pages > 1 %}
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if data_transaksi.has_prev %}
+            <li class="page-item"><a class="page-link" href="{{ url_for('transaksi.index', page=1, status=status_filter) }}">First</a></li>
+            <li class="page-item"><a class="page-link" href="{{ url_for('transaksi.index', page=data_transaksi.prev_num, status=status_filter) }}">Previous</a></li>
+        {% endif %}
+        
+        {% for page_num in data_transaksi.iter_pages() %}
+            {% if page_num %}
+                {% if page_num == data_transaksi.page %}
+                    <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+                {% else %}
+                    <li class="page-item"><a class="page-link" href="{{ url_for('transaksi.index', page=page_num, status=status_filter) }}">{{ page_num }}</a></li>
+                {% endif %}
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+        {% endfor %}
+        
+        {% if data_transaksi.has_next %}
+            <li class="page-item"><a class="page-link" href="{{ url_for('transaksi.index', page=data_transaksi.next_num, status=status_filter) }}">Next</a></li>
+            <li class="page-item"><a class="page-link" href="{{ url_for('transaksi.index', page=data_transaksi.pages, status=status_filter) }}">Last</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

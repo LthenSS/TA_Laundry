@@ -1,0 +1,346 @@
+{% extends "base.html" %}
+
+{% block title %}Laporan - Smart Wash Laundry{% endblock %}
+
+{% block content %}
+<link href="{{ url_for('static', filename='css/laporan.css') }}" rel="stylesheet">
+
+<div class="laporan-container" data-member-count="{{ member_count }}" data-non-member-count="{{ non_member_count }}">
+    <!-- Header -->
+    <div class="laporan-header">
+        <h1><i class="bi bi-file-earmark-bar-graph"></i> Laporan Penjualan</h1>
+        <p class="text-muted">Laporan Bisnis Smart Wash Laundry - {{ date_range_start }} s/d {{ date_range_end }}</p>
+    </div>
+
+    <!-- Filter Controls -->
+    <div class="laporan-filters card mb-4">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Periode</label>
+                    <div class="btn-group w-100" role="group">
+                        <input type="radio" class="btn-check" name="filter" id="filter-harian" value="harian" {% if filter_type == 'harian' %}checked{% endif %}>
+                        <label class="btn btn-outline-primary" for="filter-harian">Harian</label>
+                        
+                        <input type="radio" class="btn-check" name="filter" id="filter-mingguan" value="mingguan" {% if filter_type == 'mingguan' %}checked{% endif %}>
+                        <label class="btn btn-outline-primary" for="filter-mingguan">Mingguan</label>
+                        
+                        <input type="radio" class="btn-check" name="filter" id="filter-bulanan" value="bulanan" {% if filter_type == 'bulanan' %}checked{% endif %}>
+                        <label class="btn btn-outline-primary" for="filter-bulanan">Bulanan</label>
+                        
+                        <input type="radio" class="btn-check" name="filter" id="filter-custom" value="custom" {% if filter_type == 'custom' %}checked{% endif %}>
+                        <label class="btn btn-outline-primary" for="filter-custom">Custom</label>
+                    </div>
+                </div>
+
+                <div class="col-md-3" id="custom-date-range" style="display: {% if filter_type == 'custom' %}block{% else %}none{% endif %};">
+                    <label class="form-label">Tanggal Mulai</label>
+                    <input type="date" class="form-control" id="start-date" name="start-date">
+                </div>
+
+                <div class="col-md-3" id="custom-date-range-end" style="display: {% if filter_type == 'custom' %}block{% else %}none{% endif %};">
+                    <label class="form-label">Tanggal Akhir</label>
+                    <input type="date" class="form-control" id="end-date" name="end-date">
+                </div>
+
+                <div class="col-md-3">
+                    <button class="btn btn-primary w-100" id="apply-filter">
+                        <i class="bi bi-funnel"></i> Terapkan Filter
+                    </button>
+                </div>
+
+                <div class="col-md-3">
+                    <input type="search" class="form-control" id="search-input" placeholder="Cari Kode/Nama...">
+                </div>
+
+                <div class="col-md-3 d-flex gap-2">
+                    <button class="btn btn-outline-secondary" id="print-btn" title="Print Report">
+                        <i class="bi bi-printer"></i> Cetak
+                    </button>
+                    <button class="btn btn-outline-secondary" id="export-btn" title="Export PDF">
+                        <i class="bi bi-file-pdf"></i> PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="laporan-card card">
+                <div class="laporan-card-header bg-primary">
+                    <i class="bi bi-cash-coin"></i>
+                </div>
+                <div class="laporan-card-body">
+                    <p class="laporan-card-label">Total Pendapatan</p>
+                    <p class="laporan-card-value">{{ total_revenue }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="laporan-card card">
+                <div class="laporan-card-header bg-success">
+                    <i class="bi bi-receipt"></i>
+                </div>
+                <div class="laporan-card-body">
+                    <p class="laporan-card-label">Total Transaksi</p>
+                    <p class="laporan-card-value">{{ total_transactions }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="laporan-card card">
+                <div class="laporan-card-header bg-info">
+                    <i class="bi bi-people"></i>
+                </div>
+                <div class="laporan-card-body">
+                    <p class="laporan-card-label">Total Pelanggan</p>
+                    <p class="laporan-card-value">{{ total_customers }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="laporan-card card">
+                <div class="laporan-card-header bg-warning">
+                    <i class="bi bi-star-fill"></i>
+                </div>
+                <div class="laporan-card-body">
+                    <p class="laporan-card-label">Total Member</p>
+                    <p class="laporan-card-value">{{ total_members }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="laporan-card card">
+                <div class="laporan-card-header bg-success">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div class="laporan-card-body">
+                    <p class="laporan-card-label">Selesai</p>
+                    <p class="laporan-card-value">{{ total_completed }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Table -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-table"></i> Daftar Transaksi ({{ paginated.total }} total)
+            </h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th><a href="#" class="sort-link" data-sort="kode_transaksi">Kode</a></th>
+                        <th><a href="#" class="sort-link" data-sort="tanggal">Tanggal</a></th>
+                        <th><a href="#" class="sort-link" data-sort="nama">Pelanggan</a></th>
+                        <th>Status Member</th>
+                        <th>Layanan</th>
+                        <th><a href="#" class="sort-link" data-sort="status_laundry">Status Cucian</a></th>
+                        <th><a href="#" class="sort-link" data-sort="status_pembayaran">Status Pembayaran</a></th>
+                        <th class="text-end"><a href="#" class="sort-link" data-sort="total">Total (Rp)</a></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in table_data %}
+                    <tr>
+                        <td class="text-primary fw-bold">{{ item.kode_transaksi }}</td>
+                        <td>{{ item.tanggal_formatted }}</td>
+                        <td>{{ item.nama_pelanggan }}</td>
+                        <td>
+                            {% if item.member_status == 'Member' %}
+                                <span class="badge bg-success">Member</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Non-Member</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ item.layanan }}</td>
+                        <td>
+                            {% set status_color = {
+                                'Antrian': 'secondary',
+                                'Diproses': 'primary',
+                                'Siap Diambil': 'warning',
+                                'Selesai': 'success'
+                            } %}
+                            <span class="badge bg-{{ status_color.get(item.status_laundry, 'secondary') }}">
+                                {{ item.status_laundry }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if item.status_pembayaran == 'Lunas' %}
+                                <span class="badge bg-success">Lunas</span>
+                            {% else %}
+                                <span class="badge bg-danger">Belum Bayar</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end fw-bold">{{ item.total_formatted }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">Tidak ada transaksi untuk periode ini.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if paginated.pages > 1 %}
+        <div class="card-footer">
+            <nav aria-label="Page navigation">
+                <ul class="pagination mb-0">
+                    {% if paginated.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="?filter={{ filter_type }}&page={{ paginated.prev_num }}&search={{ search }}&sort={{ sort_by }}">Sebelumnya</a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page_num in paginated.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num == page %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% else %}
+                            <li class="page-item">
+                                <a class="page-link" href="?filter={{ filter_type }}&page={{ page_num }}&search={{ search }}&sort={{ sort_by }}">{{ page_num }}</a>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if paginated.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?filter={{ filter_type }}&page={{ paginated.next_num }}&search={{ search }}&sort={{ sort_by }}">Selanjutnya</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Statistics Section -->
+    <div class="row mb-4">
+        <!-- Top 5 Services -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-star-fill"></i> Top 5 Layanan
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if top_services %}
+                    <div class="laporan-services-list">
+                        {% for service in top_services %}
+                        <div class="laporan-service-item">
+                            <div class="laporan-service-info">
+                                <p class="laporan-service-name">{{ service.name }}</p>
+                                <p class="laporan-service-count">{{ service.count }} transaksi</p>
+                            </div>
+                            <p class="laporan-service-revenue">{{ service.total }}</p>
+                        </div>
+                        {% if not loop.last %}<hr class="my-2">{% endif %}
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center mb-0">Tidak ada data layanan</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Most Active Customers -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-person-badge"></i> Pelanggan Paling Aktif
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if active_customers %}
+                    <div class="laporan-customers-list">
+                        {% for customer in active_customers %}
+                        <div class="laporan-customer-item">
+                            <div class="laporan-customer-info">
+                                <p class="laporan-customer-name">{{ customer.name }}</p>
+                                <p class="laporan-customer-count">{{ customer.transaction_count }} transaksi</p>
+                            </div>
+                            <p class="laporan-customer-spent">{{ customer.total_spent }}</p>
+                        </div>
+                        {% if not loop.last %}<hr class="my-2">{% endif %}
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center mb-0">Tidak ada data pelanggan</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="row mb-4">
+        <!-- Member vs Non-Member -->
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-pie-chart"></i> Member vs Non-Member
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="memberChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Revenue by Month -->
+        <div class="col-lg-8 mb-4">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-graph-up"></i> Pendapatan per Bulan
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <!-- Transactions by Day -->
+        <div class="col-lg-12 mb-4">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-calendar-event"></i> Transaksi 7 Hari Terakhir
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="transactionChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+<script src="{{ url_for('static', filename='js/laporan.js') }}"></script>
+{% endblock %}

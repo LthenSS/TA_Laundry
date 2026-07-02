@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Pelanggan - Smart Wash Laundry{% endblock %}
+
+{% block content %}
+<div class="sw-page-header">
+    <h1 class="sw-page-title">Daftar Pelanggan</h1>
+    <a href="{{ url_for('member.tambah') }}" class="sw-btn-info"><i class="bi bi-plus-lg"></i> Tambah Pelanggan Baru</a>
+</div>
+
+<section class="sw-table-card">
+    <div class="table-responsive">
+        <table class="sw-table">
+            <thead>
+                <tr>
+                    <th>NO</th>
+                    <th>ID PELANGGAN</th>
+                    <th>NAMA</th>
+                    <th>NO HP</th>
+                    <th>ALAMAT</th>
+                    <th>POIN</th>
+                    <th>AKSI</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pelanggan in data_pelanggan %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td class="text-primary">PLG-{{ "%04d"|format(pelanggan.id) }}</td>
+                    <td class="fw-bold">{{ pelanggan.nama }}</td>
+                    <td>{{ pelanggan.no_hp }}</td>
+                    <td>{{ pelanggan.alamat[:50] }}{% if pelanggan.alamat|length > 50 %}...{% endif %}</td>
+                    <td class="text-success fw-bold">{{ pelanggan.total_point }} Poin</td>
+                    <td>
+                        <a href="{{ url_for('member.detail', pelanggan_id=pelanggan.id) }}" class="sw-icon-btn sw-icon-view" title="Lihat Detail"><i class="bi bi-eye-fill"></i></a>
+                        <a href="{{ url_for('member.edit', pelanggan_id=pelanggan.id) }}" class="sw-icon-btn sw-icon-edit" title="Edit"><i class="bi bi-pencil-fill"></i></a>
+                        <form method="post" action="{{ url_for('member.hapus', pelanggan_id=pelanggan.id) }}" class="d-inline" onsubmit="return confirm('Hapus pelanggan ini?')">
+                            <button type="submit" class="sw-icon-btn sw-icon-delete" title="Hapus"><i class="bi bi-trash-fill"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-5">Belum ada data pelanggan.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

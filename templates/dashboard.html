@@ -1,0 +1,375 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Dashboard - Smart Wash Laundry{% endblock %}
+
+{% block content %}
+<style>
+    /* Owner Dashboard Topbar (copied from Kasir style) */
+    .owner-topbar {
+        background: white;
+        border-bottom: 1px solid #e9ecef;
+        padding: 0.75rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        margin: -0.5rem -0.5rem 1.5rem -0.5rem;
+    }
+
+    .owner-topbar h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #17212b;
+        margin: 0;
+    }
+
+    .owner-userbar {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .owner-role-pill {
+        background: #f0f2f5;
+        color: #6f7d8a;
+        padding: 0.35rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .owner-user-text {
+        text-align: right;
+        min-width: 100px;
+    }
+
+    .owner-user-text strong {
+        display: block;
+        color: #17212b;
+        font-weight: 700;
+        font-size: 0.95rem;
+    }
+
+    .owner-user-text span {
+        display: block;
+        color: #6f7d8a;
+        font-size: 0.8rem;
+    }
+
+    .owner-user-avatar {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+    }
+
+    .owner-logout-btn {
+        background: #dc3545;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: background 0.3s;
+    }
+
+    .owner-logout-btn:hover {
+        background: #c82333;
+        color: white;
+    }
+
+    @media (max-width: 768px) {
+        .owner-topbar {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 0.5rem 1rem;
+        }
+
+        .owner-userbar {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .owner-user-text {
+            min-width: auto;
+        }
+
+        .owner-user-text strong {
+            font-size: 0.85rem;
+        }
+
+        .owner-logout-btn {
+            padding: 0.35rem 0.75rem;
+            font-size: 0.8rem;
+        }
+    }
+</style>
+
+<!-- Owner Dashboard Topbar -->
+<div class="owner-topbar">
+    <h1>Dashboard Pemilik</h1>
+    <div class="owner-userbar">
+        <span class="owner-role-pill">Role : Owner</span>
+        <div class="owner-user-text">
+            <strong>{{ session.get("nama", "Owner") }}</strong>
+            <span>Owner</span>
+        </div>
+        <span class="owner-user-avatar"><i class="bi bi-person-fill"></i></span>
+        <a class="owner-logout-btn" href="{{ url_for('auth.logout') }}">Log Out</a>
+    </div>
+</div>
+
+<link href="{{ url_for('static', filename='css/dashboard.css') }}" rel="stylesheet">
+
+<div class="dashboard-header d-flex justify-content-between align-items-center">
+    <p class="dashboard-subtitle">Ringkasan Bisnis Smart Wash Laundry</p>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-primary btn-sm" href="{{ url_for('dashboard.riwayat') }}">
+            <i class="bi bi-clock-history"></i> Riwayat Transaksi
+        </a>
+        <a class="btn btn-primary btn-sm" href="{{ url_for('laporan.index') }}">
+            <i class="bi bi-file-earmark-bar-graph"></i> Lihat Laporan
+        </a>
+    </div>
+</div>
+
+<!-- Key Metrics Cards -->
+<div class="row mb-4">
+    <!-- Today's Revenue -->
+    <div class="col-md-6 col-lg-4 mb-3">
+        <div class="metric-card metric-card-primary">
+            <div class="metric-card-header">
+                <i class="bi bi-cash-coin"></i>
+            </div>
+            <div class="metric-card-body">
+                <p class="metric-label">Pendapatan Hari Ini</p>
+                <p class="metric-value">{{ today_revenue }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monthly Revenue -->
+    <div class="col-md-6 col-lg-4 mb-3">
+        <div class="metric-card metric-card-success">
+            <div class="metric-card-header">
+                <i class="bi bi-graph-up"></i>
+            </div>
+            <div class="metric-card-body">
+                <p class="metric-label">Pendapatan Bulan Ini</p>
+                <p class="metric-value">{{ monthly_revenue }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Today's Transactions -->
+    <div class="col-md-6 col-lg-4 mb-3">
+        <div class="metric-card metric-card-info">
+            <div class="metric-card-header">
+                <i class="bi bi-receipt"></i>
+            </div>
+            <div class="metric-card-body">
+                <p class="metric-label">Transaksi Hari Ini</p>
+                <p class="metric-value">{{ today_transactions }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Members -->
+    <div class="col-md-6 col-lg-4 mb-3">
+        <div class="metric-card metric-card-purple">
+            <div class="metric-card-header">
+                <i class="bi bi-person-badge"></i>
+            </div>
+            <div class="metric-card-body">
+                <p class="metric-label">Total Member</p>
+                <p class="metric-value">{{ total_members }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Non-Members -->
+    <div class="col-md-6 col-lg-4 mb-3">
+        <div class="metric-card metric-card-warning">
+            <div class="metric-card-header">
+                <i class="bi bi-people"></i>
+            </div>
+            <div class="metric-card-body">
+                <p class="metric-label">Total Non-Member</p>
+                <p class="metric-value">{{ total_non_members }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Customers -->
+    <div class="col-md-6 col-lg-4 mb-3">
+        <div class="metric-card metric-card-info">
+            <div class="metric-card-header">
+                <i class="bi bi-people-fill"></i>
+            </div>
+            <div class="metric-card-body">
+                <p class="metric-label">Total Pelanggan</p>
+                <p class="metric-value">{{ total_members + total_non_members }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Status Summary -->
+    <div class="col-lg-6 mb-4">
+        <div class="card dashboard-card">
+            <div class="card-header bg-light border-bottom">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-list-task"></i> Status Laundry
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div class="status-badge status-antrian">
+                            <i class="bi bi-hourglass-split"></i>
+                        </div>
+                        <p class="status-count">{{ status_summary['Antrian'] }}</p>
+                        <p class="status-label">Antrian</p>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-badge status-diproses">
+                            <i class="bi bi-gear"></i>
+                        </div>
+                        <p class="status-count">{{ status_summary['Diproses'] }}</p>
+                        <p class="status-label">Diproses</p>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-badge status-ready">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+                        <p class="status-count">{{ status_summary['Siap Diambil'] }}</p>
+                        <p class="status-label">Siap Diambil</p>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-badge status-selesai">
+                            <i class="bi bi-check2-all"></i>
+                        </div>
+                        <p class="status-count">{{ status_summary['Selesai'] }}</p>
+                        <p class="status-label">Selesai</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Services -->
+    <div class="col-lg-6 mb-4">
+        <div class="card dashboard-card">
+            <div class="card-header bg-light border-bottom">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-star-fill"></i> Top 5 Layanan
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="services-list">
+                    {% for service in top_services %}
+                    <div class="service-item">
+                        <div class="service-info">
+                            <p class="service-name">{{ service.name }}</p>
+                            <p class="service-count">{{ service.count }} transaksi</p>
+                        </div>
+                        <p class="service-revenue">{{ service.total }}</p>
+                    </div>
+                    {% if not loop.last %}<hr class="my-2">{% endif %}
+                    {% else %}
+                    <p class="text-muted text-center">Tidak ada data layanan</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="row">
+    <!-- Revenue by Month Chart -->
+    <div class="col-lg-6 mb-4">
+        <div class="card dashboard-card">
+            <div class="card-header bg-light border-bottom">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-graph-up"></i> Pendapatan per Bulan
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transactions by Day Chart -->
+    <div class="col-lg-6 mb-4">
+        <div class="card dashboard-card">
+            <div class="card-header bg-light border-bottom">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-calendar-event"></i> Transaksi 7 Hari Terakhir
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="transactionChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Transactions Table -->
+<section class="sw-table-card">
+    <div class="table-responsive">
+        <table class="sw-table">
+            <thead>
+                <tr>
+                    <th>ID NOTA</th>
+                    <th>PELANGGAN</th>
+                    <th>LAYANAN</th>
+                    <th>STATUS CUCIAN</th>
+                    <th class="text-end">TOTAL (RP)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="text-primary">TRX-0601</td>
+                    <td>Anton</td>
+                    <td>Cuci Komplit (3kg)</td>
+                    <td><span class="sw-status sw-status-wash">Sedang dicuci</span></td>
+                    <td class="text-end fw-bold">24.000</td>
+                </tr>
+                <tr>
+                    <td class="text-primary">TRX-0602</td>
+                    <td>Siti</td>
+                    <td>Setrika Saja (5kg)</td>
+                    <td><span class="sw-status sw-status-ready">Siap Diambil</span></td>
+                    <td class="text-end fw-bold">25.000</td>
+                </tr>
+                <tr>
+                    <td class="text-primary">TRX-0603</td>
+                    <td>Dimas</td>
+                    <td>Cuci Kering (2kg)</td>
+                    <td><span class="sw-status sw-status-done">Selesai</span></td>
+                    <td class="text-end fw-bold">12.000</td>
+                </tr>
+                <tr>
+                    <td class="text-primary">TRX-0604</td>
+                    <td>Eni</td>
+                    <td>Cuci Komplit (3kg), Pewangi Ekstra</td>
+                    <td><span class="sw-status sw-status-queue">Antrian</span></td>
+                    <td class="text-end fw-bold">27.000</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

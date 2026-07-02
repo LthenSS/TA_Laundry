@@ -1,0 +1,120 @@
+{% extends "kasir/layout.html" %}
+
+{% block title %}Pembayaran - Smart Wash Laundry{% endblock %}
+{% block page_title %}Pembayaran{% endblock %}
+
+{% block content %}
+<link href="{{ url_for('static', filename='css/kasir.css') }}" rel="stylesheet">
+
+<form class="mb-4">
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">Cari Nota / Nama / HP</label>
+            <input type="search" name="q" class="form-control" placeholder="Cari..." value="{{ search if search else '' }}">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Dari</label>
+            <input type="date" name="start_date" class="form-control" value="{{ start_date }}">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Sampai</label>
+            <input type="date" name="end_date" class="form-control" value="{{ end_date }}">
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">Filter</button>
+        </div>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead>
+            <tr>
+                <th>Nota</th>
+                <th>Tanggal</th>
+                <th>Nama Pelanggan</th>
+                <th>No HP</th>
+                <th>Subtotal</th>
+                <th>Diskon</th>
+                <th>Total</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for o in orders %}
+            <tr>
+                <td>{{ o.kode }}</td>
+                <td>{{ o.tanggal }}</td>
+                <td>{{ o.pelanggan }}</td>
+                <td>{{ o.no_hp }}</td>
+                <td>{{ format_currency(o.subtotal) if o.subtotal is not none else '-' }}</td>
+                <td>{{ format_currency(o.discount) if o.discount is not none else '-' }}</td>
+                <td>{{ format_currency(o.total) if o.total is not none else '-' }}</td>
+                <td>
+                    <button type="button" class="btn btn-sm btn-success btn-bayar" data-id="{{ o.id }}" data-kode="{{ o.kode }}" data-total="{{ o.total }}">
+                        Bayar
+                    </button>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8" class="text-center">Tidak ada transaksi untuk dibayar.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Payment Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Pembayaran</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" action="{{ url_for('karyawan.pembayaran') }}">
+        <div class="modal-body">
+          <input type="hidden" name="transaksi_id" id="payTransaksiId">
+          <div class="mb-2 text-muted">Nota</div>
+          <div id="payKode" class="fw-bold mb-3"></div>
+          <div class="mb-2 text-muted">Total Bayar</div>
+          <div id="payTotal" class="fw-bold mb-3"></div>
+
+          <div class="mb-3">
+            <label class="form-label">Metode Pembayaran</label>
+            <select name="metode" id="payMetode" class="form-select" required>
+              <option value="">Pilih metode...</option>
+              <option value="Cash">Cash</option>
+              <option value="QRIS">QRIS</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary">Bayar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1080;">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, msg in messages %}
+      {% if category == 'success' %}
+        <div id="payment-toast" data-message="{{ msg }}"></div>
+      {% endif %}
+    {% endfor %}
+  {% endwith %}
+  <div id="paymentToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div id="paymentToastBody" class="toast-body"></div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/pembayaran.js') }}"></script>
+{% endblock %}

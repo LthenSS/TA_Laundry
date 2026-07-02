@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+
+{% block title %}{% if transaksi %}Edit Transaksi{% else %}Buat Transaksi{% endif %} - Smart Wash Laundry{% endblock %}
+
+{% block content %}
+<div class="sw-form-wrap">
+    <section class="sw-modal-card">
+        <div class="sw-modal-heading">
+            <h1 class="sw-modal-title">
+                <span class="sw-modal-title-icon" style="background:{% if transaksi %}#ff8a18{% else %}#99ddeb{% endif %}; color:#000;">
+                    <i class="bi {% if transaksi %}bi-pencil-fill{% else %}bi-plus-lg{% endif %}"></i>
+                </span>
+                {% if transaksi %}Edit Transaksi Laundry{% else %}Buat Transaksi Laundry Baru{% endif %}
+            </h1>
+            <a href="{{ url_for('transaksi.index') }}" class="sw-close-link">&times;</a>
+        </div>
+
+        <form class="sw-form" method="post" id="formTransaksi">
+            <!-- Member Selection -->
+            <div class="mb-4">
+                <label for="pelanggan_id" class="form-label">Pilih Pelanggan <span class="sw-required">*</span></label>
+                <select class="form-select" id="pelanggan_id" name="pelanggan_id" required>
+                    <option value="">-- Pilih Pelanggan --</option>
+                    {% for member in members %}
+                    <option value="{{ member.id }}" {% if transaksi and transaksi.pelanggan_id == member.id %}selected{% endif %}>
+                        {{ member.nama }} ({{ member.no_hp }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Layanan Items -->
+            <div class="mb-4">
+                <label class="form-label">Pilih Layanan <span class="sw-required">*</span></label>
+                <div id="layananItems">
+                    {% if details %}
+                        {% for detail in details %}
+                        <div class="layanan-item mb-3 p-3 border rounded" data-index="{{ loop.index0 }}">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <select class="form-select layanan-select" name="layanan_id_{{ loop.index0 }}" required>
+                                        <option value="">-- Pilih Layanan --</option>
+                                        {% for lay in layanan %}
+                                        <option value="{{ lay.id_layanan }}" {% if lay.id_layanan == detail.layanan_id %}selected{% endif %}>
+                                            {{ lay.nama_layanan }} - {{ lay.harga_rupiah() }}/kg
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="input-group">
+                                        <input type="number" class="form-control berat-input" name="berat_{{ loop.index0 }}" value="{{ detail.berat }}" min="0.1" step="0.1" placeholder="Berat (kg)" required>
+                                        <button type="button" class="btn btn-danger btn-remove-item"><i class="bi bi-trash"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="layanan-item mb-3 p-3 border rounded" data-index="0">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <select class="form-select layanan-select" name="layanan_id_0" required>
+                                    <option value="">-- Pilih Layanan --</option>
+                                    {% for lay in layanan %}
+                                    <option value="{{ lay.id_layanan }}">
+                                        {{ lay.nama_layanan }} - {{ lay.harga_rupiah() }}/kg
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <input type="number" class="form-control berat-input" name="berat_0" min="0.1" step="0.1" placeholder="Berat (kg)" required>
+                                    <button type="button" class="btn btn-danger btn-remove-item"><i class="bi bi-trash"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-primary" id="btnTambahLayanan">
+                    <i class="bi bi-plus-lg"></i> Tambah Layanan
+                </button>
+            </div>
+
+            <!-- Promo Selection -->
+            <div class="mb-4">
+                <label for="promo_id" class="form-label">Pilih Promo (Opsional)</label>
+                <select class="form-select" id="promo_id" name="promo_id">
+                    <option value="">-- Tanpa Promo --</option>
+                    {% for pro in promo %}
+                    <option value="{{ pro.id_promo }}" {% if pembayaran and pembayaran.promo_id == pro.id_promo %}selected{% endif %}>
+                        {{ pro.nama_promo }} - {{ pro.nilai_label() }} (Min. {{ pro.minimal_label() }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Total Calculation -->
+            <div class="mb-4 p-3 bg-light rounded">
+                <div class="row mb-2">
+                    <div class="col-md-8 text-end"><strong>Total Harga:</strong></div>
+                    <div class="col-md-4 text-end" id="totalHarga">Rp 0</div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-8 text-end"><strong>Diskon:</strong></div>
+                    <div class="col-md-4 text-end text-danger" id="totalDiskon">Rp 0</div>
+                </div>
+                <div class="row border-top pt-2">
+                    <div class="col-md-8 text-end"><strong class="fs-5">Total Bayar:</strong></div>
+                    <div class="col-md-4 text-end fs-5 fw-bold text-primary" id="totalBayar">Rp 0</div>
+                </div>
+                <input type="hidden" id="total_harga" name="total_harga">
+                <input type="hidden" id="total_bayar" name="total_bayar">
+                <input type="hidden" id="diskon" name="diskon">
+            </div>
+
+            <!-- Payment Method -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <label for="metode_pembayaran" class="form-label">Metode Pembayaran <span class="sw-required">*</span></label>
+                    <select class="form-select" id="metode_pembayaran" name="metode_pembayaran" required>
+                        <option value="Cash" {% if pembayaran and pembayaran.metode_pembayaran == 'Cash' %}selected{% endif %}>Cash</option>
+                        <option value="QRIS" {% if pembayaran and pembayaran.metode_pembayaran == 'QRIS' %}selected{% endif %}>QRIS</option>
+                        <option value="Transfer" {% if pembayaran and pembayaran.metode_pembayaran == 'Transfer' %}selected{% endif %}>Transfer</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="status_pembayaran" class="form-label">Status Pembayaran <span class="sw-required">*</span></label>
+                    <select class="form-select" id="status_pembayaran" name="status_pembayaran" required>
+                        <option value="Belum Bayar" {% if not pembayaran or pembayaran.status_pembayaran == 'Belum Bayar' %}selected{% endif %}>Belum Bayar</option>
+                        <option value="Lunas" {% if pembayaran and pembayaran.status_pembayaran == 'Lunas' %}selected{% endif %}>Lunas</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Transaction Status & Notes -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <label for="status_transaksi" class="form-label">Status Transaksi</label>
+                    <select class="form-select" id="status_transaksi" name="status_transaksi">
+                        <option value="Menunggu" {% if not transaksi or transaksi.status_transaksi == 'Menunggu' %}selected{% endif %}>Menunggu</option>
+                        <option value="Diproses" {% if transaksi and transaksi.status_transaksi == 'Diproses' %}selected{% endif %}>Diproses</option>
+                        <option value="Selesai" {% if transaksi and transaksi.status_transaksi == 'Selesai' %}selected{% endif %}>Selesai</option>
+                        <option value="Diambil" {% if transaksi and transaksi.status_transaksi == 'Diambil' %}selected{% endif %}>Diambil</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="catatan" class="form-label">Catatan</label>
+                    <input type="text" class="form-control" id="catatan" name="catatan" value="{{ transaksi.catatan if transaksi else '' }}" placeholder="Catatan tambahan...">
+                </div>
+            </div>
+
+            <input type="hidden" name="karyawan_id" value="{{ session.user_id }}">
+
+            <div class="sw-form-actions">
+                <a href="{{ url_for('transaksi.index') }}" class="sw-btn-muted px-5">Batal</a>
+                <button type="submit" class="{% if transaksi %}sw-btn-orange{% else %}sw-btn-primary{% endif %} px-4">
+                    <i class="bi bi-save"></i> {% if transaksi %}Simpan Perubahan{% else %}Simpan Transaksi{% endif %}
+                </button>
+            </div>
+        </form>
+    </section>
+</div>
+
+<script>
+let itemCount = {{ details|length if details else 1 }};
+const layananData = {{ layanan|tojson }};
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    hitung_total();
+    
+    document.getElementById('btnTambahLayanan').addEventListener('click', tambah_layanan);
+        document.getElementById('pelanggan_id').addEventListener('change', hitung_total);
+    document.getElementById('layananItems').addEventListener('click', function(e) {
+        if (e.target.closest('.btn-remove-item')) {
+            e.target.closest('.layanan-item').remove();
+            hitung_total();
+        }
+    });
+});
+
+function tambah_layanan() {
+    const container = document.getElementById('layananItems');
+    const newItem = document.createElement('div');
+    newItem.className = 'layanan-item mb-3 p-3 border rounded';
+    newItem.setAttribute('data-index', itemCount);
+    newItem.innerHTML = `
+        <div class="row">
+            <div class="col-md-8">
+                <select class="form-select layanan-select" name="layanan_id_${itemCount}" required>
+                    <option value="">-- Pilih Layanan --</option>
+                    ${layananData.map(l => `<option value="${l.id_layanan}">${l.nama_layanan} - Rp ${l.harga_perkg.toLocaleString('id-ID')}/kg</option>`).join('')}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <div class="input-group">
+                    <input type="number" class="form-control berat-input" name="berat_${itemCount}" min="0.1" step="0.1" placeholder="Berat (kg)" required>
+                    <button type="button" class="btn btn-danger btn-remove-item"><i class="bi bi-trash"></i></button>
+                </div>
+            </div>
+        </div>
+    `;
+    container.appendChild(newItem);
+    itemCount++;
+    hitung_total();
+}
+
+async function hitung_total() {
+    const items = [];
+    document.querySelectorAll('.layanan-item').forEach(item => {
+        const select = item.querySelector('.layanan-select');
+        const beratInput = item.querySelector('.berat-input');
+        
+        if (select.value && beratInput.value) {
+            items.push({
+                layanan_id: select.value,
+                berat: beratInput.value
+            });
+        }
+    });
+    
+    const promoId = document.getElementById('promo_id').value;
+    
+    if (items.length === 0) {
+        document.getElementById('totalHarga').textContent = 'Rp 0';
+        document.getElementById('totalDiskon').textContent = 'Rp 0';
+        document.getElementById('totalBayar').textContent = 'Rp 0';
+        document.getElementById('total_harga').value = '0';
+        document.getElementById('total_bayar').value = '0';
+        document.getElementById('diskon').value = '0';
+        return;
+    }
+    
+    try {
+        const response = await fetch('{{ url_for("transaksi.api_hitung_total") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                items: items,
+                promo_id: promoId || null
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            console.error(data.error);
+            return;
+        }
+        
+        document.getElementById('totalHarga').textContent = `Rp ${Number(data.total).toLocaleString('id-ID')}`;
+        document.getElementById('totalDiskon').textContent = `Rp ${Number(data.diskon).toLocaleString('id-ID')}`;
+        document.getElementById('totalBayar').textContent = `Rp ${Number(data.total_bayar).toLocaleString('id-ID')}`;
+        
+        document.getElementById('total_harga').value = data.total;
+        document.getElementById('total_bayar').value = data.total_bayar;
+        document.getElementById('diskon').value = data.diskon;
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+</script>
+{% endblock %}

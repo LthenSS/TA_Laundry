@@ -1,0 +1,7 @@
+﻿Flask
+Flask-SQLAlchemy
+PyMySQL
+Werkzeug
+reportlab
+requests
+python-dotenv

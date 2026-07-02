@@ -1,0 +1,44 @@
+﻿{% extends "base.html" %}
+
+{% block title %}{% if layanan %}Edit Layanan{% else %}Tambah Layanan{% endif %} - Smart Wash Laundry{% endblock %}
+
+{% block content %}
+<div class="sw-form-wrap">
+    <section class="sw-modal-card">
+        <div class="sw-modal-heading">
+            <h1 class="sw-modal-title">
+                <span class="sw-modal-title-icon" style="background:{% if layanan %}#ff8a18{% else %}#99ddeb{% endif %}; color:#000;">
+                    <i class="bi {% if layanan %}bi-pencil-fill{% else %}bi-plus-lg{% endif %}"></i>
+                </span>
+                {% if layanan %}Edit Data Layanan{% else %}Form Tambah Layanan Baru{% endif %}
+            </h1>
+            <a href="{{ url_for('layanan.index') }}" class="sw-close-link">&times;</a>
+        </div>
+
+        <form class="sw-form" method="post">
+            <div class="mb-4">
+                <label for="nama_layanan" class="form-label">Nama Layanan <span class="sw-required">*</span></label>
+                <input type="text" class="form-control" id="nama_layanan" name="nama_layanan" value="{{ layanan.nama_layanan if layanan else '' }}" placeholder="Masukan nama layanan Contoh : Cuci Seprei" required>
+            </div>
+
+            <div class="mb-4">
+                <label for="harga_perkg" class="form-label">Tarif (per Kg/per pcs) <span class="sw-required">*</span></label>
+                <div class="input-group sw-input-group">
+                    <span class="input-group-text">Rp</span>
+                    <input type="number" class="form-control" id="harga_perkg" name="harga_perkg" value="{{ layanan.harga_perkg if layanan else '0' }}" min="0" step="0.01" required>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="estimasi_hari" class="form-label">Estimasi Hari <span class="sw-required">*</span></label>
+                <input type="number" class="form-control" id="estimasi_hari" name="estimasi_hari" value="{{ layanan.estimasi_hari if layanan else '1' }}" min="1" required>
+            </div>
+
+            <div class="sw-form-actions">
+                <a href="{{ url_for('layanan.index') }}" class="sw-btn-muted px-5">Batal</a>
+                <button type="submit" class="{% if layanan %}sw-btn-orange{% else %}sw-btn-primary{% endif %} px-4"><i class="bi bi-save"></i> {% if layanan %}Simpan Perubahan{% else %}Simpan Layanan{% endif %}</button>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}

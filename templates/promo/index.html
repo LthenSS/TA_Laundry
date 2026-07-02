@@ -1,0 +1,64 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Promo - Smart Wash Laundry{% endblock %}
+
+{% block content %}
+<div class="sw-page-header">
+    <h1 class="sw-page-title">Daftar Promo</h1>
+    <a href="{{ url_for('promo.tambah') }}" class="sw-btn-info"><i class="bi bi-plus-lg"></i> Tambah Promo Baru</a>
+</div>
+
+<div class="sw-promo-note">
+    Non-member bisa memakai promo diskon biasa. Member bisa memakai promo diskon biasa dan penukaran poin saat transaksi.
+</div>
+
+<section class="sw-table-card">
+    <div class="table-responsive">
+        <table class="sw-table">
+            <thead>
+                <tr>
+                    <th>ID PROMO</th>
+                    <th>NAMA PROMO</th>
+                    <th>SYARAT PROMO</th>
+                    <th>NOMINAL POTONGAN</th>
+                    <th>BERLAKU UNTUK</th>
+                    <th>STATUS</th>
+                    <th>AKSI</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for promo in data_promo %}
+                <tr>
+                    <td>P-{{ "%02d"|format(promo.id_promo) }}</td>
+                    <td class="fw-bold">{{ promo.nama_promo }}</td>
+                    <td class="text-success fw-bold">{{ promo.minimal_label() }}</td>
+                    <td class="text-primary fw-bold">{{ promo.nilai_label() }}</td>
+                    <td class="text-primary">Member & Non-member</td>
+                    <td>
+                        {% if promo.status == "Aktif" %}
+                            <span class="sw-status sw-status-active">Aktif</span>
+                        {% else %}
+                            <span class="sw-status sw-status-inactive">Non-Aktif</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('promo.edit', id_promo=promo.id_promo) }}" class="sw-icon-btn sw-icon-edit" title="Edit"><i class="bi bi-pencil-fill"></i></a>
+                        <form method="post" action="{{ url_for('promo.toggle', id_promo=promo.id_promo) }}" class="d-inline">
+                            {% if promo.status == "Aktif" %}
+                                <button type="submit" class="sw-icon-btn sw-icon-toggle-off" title="Nonaktifkan"><i class="bi bi-ban"></i></button>
+                            {% else %}
+                                <button type="submit" class="sw-icon-btn sw-icon-toggle-on" title="Aktifkan"><i class="bi bi-check-lg"></i></button>
+                            {% endif %}
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-5">Belum ada data promo.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends layout_template|default('kasir/layout.html') %}
+
+{% set is_owner_view = (layout_template|default('kasir/layout.html')) == 'base.html' %}
+
+{% block title %}Riwayat Transaksi - Smart Wash Laundry{% endblock %}
+{% block page_title %}Riwayat Transaksi{% endblock %}
+
+{% block content %}
+<link href="{{ url_for('static', filename='css/kasir.css') }}" rel="stylesheet">
+
+<form class="mb-4 row g-3">
+    <div class="col-md-4">
+        <input id="searchInput" type="search" name="q" class="form-control" placeholder="Cari Kode / Nama / HP" value="{{ search if search else '' }}">
+    </div>
+    <div class="col-md-3">
+        <select id="statusFilter" name="status" class="form-select">
+            <option value="">Semua Status Laundry</option>
+            <option value="Antrian" {% if status_filter=='Antrian' %}selected{% endif %}>Antrian</option>
+            <option value="Diproses" {% if status_filter=='Diproses' %}selected{% endif %}>Diproses</option>
+            <option value="Siap Diambil" {% if status_filter=='Siap Diambil' %}selected{% endif %}>Siap Diambil</option>
+            <option value="Selesai" {% if status_filter=='Selesai' %}selected{% endif %}>Selesai</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select id="paymentFilter" name="payment_status" class="form-select">
+            <option value="">Semua Status Bayar</option>
+            <option value="Belum Bayar" {% if payment_status=='Belum Bayar' %}selected{% endif %}>Belum Bayar</option>
+            <option value="Lunas" {% if payment_status=='Lunas' %}selected{% endif %}>Lunas</option>
+        </select>
+    </div>
+    <div class="col-md-2 d-flex">
+        <button id="applyFilters" class="btn btn-primary w-100">Terapkan</button>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table id="riwayatTable" class="table table-hover align-middle">
+        <thead>
+            <tr>
+                <th>Nota</th>
+                <th>Tanggal</th>
+                <th>Nama Pelanggan</th>
+                <th>No HP</th>
+                <th>Total</th>
+                <th>Status Laundry</th>
+                <th>Status Pembayaran</th>
+                {% if not is_owner_view %}<th>Aksi</th>{% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for o in orders %}
+            <tr data-id="{{ o.id }}">
+                <td class="col-kode">{{ o.kode }}</td>
+                <td>{{ o.tanggal }}</td>
+                <td class="col-nama">{{ o.pelanggan }}</td>
+                <td class="col-hp">{{ o.no_hp }}</td>
+                <td>{{ format_currency(o.total) }}</td>
+                <td><span class="badge {{ o.status_laundry_class }}">{{ o.status_laundry }}</span></td>
+                <td><span class="badge {{ o.status_pembayaran_class }}">{{ o.status_pembayaran }}</span></td>
+                {% if not is_owner_view %}
+                <td>
+                    <button class="btn btn-sm btn-outline-secondary btn-detail" data-id="{{ o.id }}">Detail</button>
+                </td>
+                {% endif %}
+            </tr>
+            {% else %}
+            <tr><td colspan="8" class="text-center">Tidak ada transaksi.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Detail Transaksi</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="detailContent">
+          <!-- populated by JS -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+        {% if not is_owner_view %}<button type="button" id="printBtn" class="btn btn-primary">Cetak Nota</button>{% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/riwayat.js') }}"></script>
+{% endblock %}

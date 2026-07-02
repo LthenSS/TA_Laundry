@@ -1,0 +1,92 @@
+{% extends "kasir/layout.html" %}
+
+{% block title %}Data Pelanggan - Smart Wash Laundry{% endblock %}
+{% block page_title %}Data Pelanggan{% endblock %}
+
+{% block content %}
+<form method="get" class="mb-4">
+    <div class="sw-kasir-search mb-0">
+        <i class="bi bi-search"></i>
+        <input type="search" name="q" placeholder="cari nama/no whatsapp pelanggan..." value="{{ search if search else '' }}">
+    </div>
+</form>
+
+<section class="sw-kasir-panel mb-5">
+    <header class="sw-kasir-panel-title"><i class="bi bi-person-badge-fill"></i> Pelanggan Member</header>
+    <div class="table-responsive">
+        <table class="sw-kasir-table">
+            <thead>
+                <tr>
+                    <th>Nama</th>
+                    <th>Nomor HP</th>
+                    <th>Alamat</th>
+                    <th>Status</th>
+                    <th>Total Point</th>
+                    <th>Total Transaksi</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in member_rows %}
+                <tr>
+                    <td>{{ customer.nama }}</td>
+                    <td>{{ customer.no_hp }}</td>
+                    <td>{{ customer.alamat }}</td>
+                    <td><span class="badge bg-success">Member</span></td>
+                    <td>{{ customer.total_point }} Poin</td>
+                    <td>{{ customer.total_transaksi }}</td>
+                    <td>
+                        <a href="{{ url_for('karyawan.member_detail', id=customer.id) }}" class="btn btn-sm btn-outline-primary">Detail</a>
+                        <a href="{{ url_for('karyawan.member_edit', id=customer.id) }}" class="btn btn-sm btn-outline-warning ms-1">Edit</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">Belum ada pelanggan member untuk ditampilkan.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="sw-kasir-panel">
+    <header class="sw-kasir-panel-title"><i class="bi bi-people-fill"></i> Pelanggan Non Member</header>
+    <div class="table-responsive">
+        <table class="sw-kasir-table">
+            <thead>
+                <tr>
+                    <th>Nama</th>
+                    <th>Nomor HP</th>
+                    <th>Alamat</th>
+                    <th>Status</th>
+                    <th>Total Transaksi</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in non_member_rows %}
+                <tr>
+                    <td>{{ customer.nama }}</td>
+                    <td>{{ customer.no_hp }}</td>
+                    <td>{{ customer.alamat }}</td>
+                    <td><span class="badge bg-secondary">Non Member</span></td>
+                    <td>{{ customer.total_transaksi }}</td>
+                    <td>
+                        <a href="{{ url_for('karyawan.member_detail', id=customer.id) }}" class="btn btn-sm btn-outline-primary">Detail</a>
+                        <a href="{{ url_for('karyawan.member_edit', id=customer.id) }}" class="btn btn-sm btn-outline-warning ms-1">Edit</a>
+                        <form method="post" action="{{ url_for('karyawan.jadikan_member', id=customer.id) }}" class="d-inline" onsubmit="return confirm('Apakah Anda yakin ingin menjadikan pelanggan ini sebagai Member?')">
+                            <button type="submit" class="btn btn-sm btn-success ms-1">Jadikan Member</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">Belum ada pelanggan non member untuk ditampilkan.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

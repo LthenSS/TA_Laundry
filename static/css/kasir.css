@@ -1,0 +1,153 @@
+:root {
+    --sw-kasir-bg: #f7fbfd;
+    --sw-kasir-panel: #ffffff;
+    --sw-kasir-border: #d7e4e8;
+    --sw-kasir-accent: #1f6fbd;
+    --sw-kasir-accent-soft: #d7ecf9;
+    --sw-kasir-success: #1f9d6e;
+    --sw-kasir-warning: #f2b01b;
+    --sw-kasir-danger: #e85151;
+    --sw-kasir-text: #17212b;
+    --sw-kasir-muted: #6f7d8a;
+}
+
+.sw-kasir-order {
+    display: grid;
+    gap: 24px;
+    grid-template-columns: minmax(0, 1.5fr) 420px;
+    align-items: start;
+}
+
+.sw-order-form {
+    background: var(--sw-kasir-panel);
+    border: 1px solid var(--sw-kasir-border);
+    border-radius: 24px;
+    padding: 28px;
+}
+
+.sw-order-form h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 18px;
+    color: var(--sw-kasir-accent);
+}
+
+.sw-order-summary {
+    background: linear-gradient(180deg, #ffffff 0%, #f1f7fb 100%);
+    border: 1px solid var(--sw-kasir-border);
+    border-radius: 24px;
+    padding: 28px;
+    position: sticky;
+    top: 26px;
+    min-height: 430px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.sw-summary-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.sw-summary-line {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    border: 1px solid var(--sw-kasir-border);
+    background: #f9feff;
+}
+
+.sw-summary-line.discount {
+    color: var(--sw-kasir-danger);
+}
+
+.sw-total-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 22px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #1f6fbd, #38b7ff);
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.sw-confirm-btn {
+    width: 100%;
+    border-radius: 16px;
+    background: var(--sw-kasir-accent);
+    color: white;
+    font-weight: 700;
+    border: none;
+    padding: 14px 22px;
+}
+
+.sw-kasir-input {
+    border-radius: 14px;
+    border: 1px solid var(--sw-kasir-border);
+    background: #f8fcff;
+}
+
+.sw-kasir-input:focus {
+    border-color: var(--sw-kasir-accent);
+    box-shadow: 0 0 0 0.15rem rgba(31, 111, 189, 0.18);
+}
+
+#customerSuggestions {
+    max-height: 320px;
+    overflow-y: auto;
+    border-radius: 0 0 14px 14px;
+    border: 1px solid rgba(31, 111, 189, 0.15);
+    background: white;
+}
+
+.sw-kasir-order .mb-4.position-relative {
+    z-index: 11;
+}
+
+@media (max-width: 1100px) {
+    .sw-kasir-order {
+        grid-template-columns: 1fr;
+    }
+
+    .sw-order-summary {
+        position: relative;
+        top: 0;
+        min-height: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .sw-order-form,
+    .sw-order-summary {
+        padding: 20px;
+    }
+
+    .sw-total-box {
+        font-size: 1rem;
+    }
+}
+
+/* Payment page styles */
+.sw-payment-card {
+    border: 1px solid var(--sw-kasir-border);
+    border-radius: 12px;
+    padding: 16px;
+    background: var(--sw-kasir-panel);
+}
+
+.sw-payment-amount {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+/* Riwayat styles */
+.sw-kasir-history .sw-kasir-table td,
+.sw-kasir-history .sw-kasir-table th {
+    vertical-align: middle;
+}

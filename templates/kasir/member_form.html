@@ -1,0 +1,31 @@
+{% extends "kasir/layout.html" %}
+
+{% block title %}Edit Pelanggan - Smart Wash Laundry{% endblock %}
+{% block page_title %}Edit Pelanggan{% endblock %}
+
+{% block content %}
+<section class="sw-kasir-panel">
+    <header class="sw-kasir-panel-title"><i class="bi bi-pencil-fill"></i> Edit Data Pelanggan</header>
+    <div class="p-4">
+        <form method="post" class="row g-4">
+            <div class="col-md-6">
+                <label for="nama" class="form-label">Nama <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="nama" name="nama" value="{{ customer.nama }}" required>
+            </div>
+            <div class="col-md-6">
+                <label for="no_hp" class="form-label">Nomor HP <span class="text-danger">*</span></label>
+                <input type="tel" class="form-control" id="no_hp" name="no_hp" value="{{ customer.no_hp }}" pattern="[0-9]{10,15}" required>
+                <small class="text-muted">Minimal 10 digit, maksimal 15 digit</small>
+            </div>
+            <div class="col-12">
+                <label for="alamat" class="form-label">Alamat <span class="text-danger">*</span></label>
+                <textarea class="form-control" id="alamat" name="alamat" rows="4" required>{{ customer.alamat or '' }}</textarea>
+            </div>
+            <div class="col-12 text-end">
+                <a href="{{ url_for('karyawan.member') }}" class="btn btn-secondary">Batal</a>
+                <button type="submit" class="btn btn-primary ms-2">Simpan Perubahan</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

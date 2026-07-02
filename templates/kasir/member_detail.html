@@ -1,0 +1,137 @@
+{% extends "kasir/layout.html" %}
+
+{% block title %}Detail Pelanggan - Smart Wash Laundry{% endblock %}
+{% block page_title %}Detail Pelanggan{% endblock %}
+
+{% block content %}
+<section class="sw-kasir-panel mb-5">
+    <header class="sw-kasir-panel-title"><i class="bi bi-person-circle"></i> Informasi Pelanggan</header>
+    <div class="p-4">
+        <div class="row g-4">
+            <div class="col-md-6">
+                <label class="form-label text-muted">Nama</label>
+                <div class="fs-5 fw-bold">{{ customer.nama }}</div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label text-muted">Nomor HP</label>
+                <div class="fs-5">{{ customer.no_hp }}</div>
+            </div>
+            <div class="col-md-12">
+                <label class="form-label text-muted">Alamat</label>
+                <div class="fs-5">{{ customer.alamat or '-' }}</div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label text-muted">Status Member</label>
+                <div>
+                    {% if customer.is_member %}
+                        <span class="badge bg-success fs-6">Member</span>
+                    {% else %}
+                        <span class="badge bg-secondary fs-6">Non Member</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label text-muted">Total Point</label>
+                <div class="fs-5 fw-bold text-success">{{ customer.total_point }} Poin</div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label text-muted">Total Transaksi</label>
+                <div class="fs-5 fw-bold">{{ total_transaksi }}</div>
+            </div>
+            {% if customer.is_member %}
+            <div class="col-md-6">
+                <label class="form-label text-muted">Tanggal Bergabung</label>
+                <div class="fs-5">{{ customer.created_at.strftime('%d/%m/%Y %H:%M') if customer.created_at else '-' }}</div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label text-muted">Total Pengeluaran</label>
+                <div class="fs-5 fw-bold text-info">Rp {{ "{:,.0f}".format(total_spending) }}</div>
+            </div>
+            {% else %}
+            <div class="col-md-12">
+                <label class="form-label text-muted">Total Pengeluaran</label>
+                <div class="fs-5 fw-bold text-info">Rp {{ "{:,.0f}".format(total_spending) }}</div>
+            </div>
+            {% endif %}
+            {% if last_transaksi_date %}
+            <div class="col-md-12">
+                <label class="form-label text-muted">Transaksi Terakhir</label>
+                <div class="fs-5">{{ last_transaksi_date.strftime('%d/%m/%Y %H:%M') }}</div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="mt-4 text-end">
+            <a href="{{ url_for('karyawan.member') }}" class="btn btn-secondary">Kembali</a>
+            <a href="{{ url_for('karyawan.member_edit', id=customer.id) }}" class="btn btn-warning ms-2">Edit</a>
+            {% if not customer.is_member %}
+            <form method="post" action="{{ url_for('karyawan.jadikan_member', id=customer.id) }}" class="d-inline">
+                <button type="submit" class="btn btn-success ms-2" onclick="return confirm('Apakah Anda yakin ingin menjadikan pelanggan ini sebagai Member?')">Jadikan Member</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+{% if customer.is_member and point_history %}
+<section class="sw-kasir-panel mb-5">
+    <header class="sw-kasir-panel-title"><i class="bi bi-star-fill"></i> Riwayat Poin</header>
+    <div class="table-responsive">
+        <table class="sw-kasir-table">
+            <thead>
+                <tr>
+                    <th>Tanggal</th>
+                    <th>Keterangan</th>
+                    <th>Poin Masuk</th>
+                    <th>Poin Keluar</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for point in point_history %}
+                <tr>
+                    <td>{{ point.tanggal.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td>{{ point.keterangan or '-' }}</td>
+                    <td class="text-success fw-bold">{{ point.point_masuk or 0 }}</td>
+                    <td class="text-danger fw-bold">{{ point.point_keluar or 0 }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center text-muted py-4">Belum ada riwayat poin.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endif %}
+
+<section class="sw-kasir-panel">
+    <header class="sw-kasir-panel-title"><i class="bi bi-clock-history"></i> Riwayat Transaksi</header>
+    <div class="table-responsive">
+        <table class="sw-kasir-table">
+            <thead>
+                <tr>
+                    <th>ID Nota</th>
+                    <th>Tanggal</th>
+                    <th>Status</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transaksi in transactions %}
+                <tr>
+                    <td>{{ transaksi.format_id() }}</td>
+                    <td>{{ transaksi.tanggal_transaksi.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td>{{ transaksi.status_transaksi }}</td>
+                    <td class="fw-bold">Rp {{ "{:,.0f}".format(transaksi.total_bayar) }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center text-muted py-4">Belum ada transaksi untuk pelanggan ini.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

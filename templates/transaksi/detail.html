@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}Detail Transaksi - Smart Wash Laundry{% endblock %}
+
+{% block content %}
+<div class="sw-form-wrap">
+    <section class="sw-modal-card">
+        <div class="sw-modal-heading">
+            <h1 class="sw-modal-title">
+                <span class="sw-modal-title-icon" style="background:#e3e9e8; color:#1170ab;">
+                    <i class="bi bi-receipt"></i>
+                </span>
+                Detail Transaksi
+            </h1>
+            <a href="{{ url_for('transaksi.index') }}" class="sw-close-link">&times;</a>
+        </div>
+
+        <div class="sw-detail-info">
+            <!-- Transaction Header -->
+            <div class="row mb-4 pb-3 border-bottom">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label text-muted">ID Transaksi</label>
+                        <div class="fs-5 fw-bold text-primary">{{ transaksi.format_id() }}</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Tanggal Transaksi</label>
+                        <div class="fs-5">{{ transaksi.tanggal_transaksi.strftime('%d/%m/%Y %H:%M') }}</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Status Transaksi</label>
+                        <div class="fs-5">
+                            {% if transaksi.status_transaksi == 'Menunggu' %}
+                                <span class="badge bg-secondary">Menunggu</span>
+                            {% elif transaksi.status_transaksi == 'Diproses' %}
+                                <span class="badge bg-info">Diproses</span>
+                            {% elif transaksi.status_transaksi == 'Selesai' %}
+                                <span class="badge bg-warning">Selesai</span>
+                            {% elif transaksi.status_transaksi == 'Diambil' %}
+                                <span class="badge bg-success">Diambil</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Status Pembayaran</label>
+                        {% if pembayaran %}
+                            <div class="fs-5">
+                                {% if pembayaran.status_pembayaran == 'Lunas' %}
+                                    <span class="badge bg-success">Lunas</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Belum Bayar</span>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pelanggan Info -->
+            <div class="mb-4 p-3 bg-light rounded">
+                <h6 class="mb-3">Informasi Pelanggan</h6>
+                {% if transaksi.pelanggan %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <div>
+                            <small class="text-muted">Nama Pelanggan</small>
+                            <div class="fw-bold">{{ transaksi.pelanggan.nama }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div>
+                            <small class="text-muted">No. HP</small>
+                            <div class="fw-bold">{{ transaksi.pelanggan.no_hp }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                    <div class="text-muted">-</div>
+                {% endif %}
+            </div>
+
+            <!-- Transaction Items -->
+            <div class="mb-4">
+                <h6 class="mb-3">Detail Layanan</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>No</th>
+                                <th>Layanan</th>
+                                <th>Berat</th>
+                                <th>Harga Satuan</th>
+                                <th class="text-end">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for detail in details %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ detail.layanan.nama_layanan if detail.layanan else '-' }}</td>
+                                <td>{{ detail.berat }} kg</td>
+                                <td>{{ detail.layanan.harga_rupiah() if detail.layanan else '-' }}</td>
+                                <td class="text-end fw-bold">{{ detail.format_subtotal() }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Payment Details -->
+            {% if pembayaran %}
+            <div class="mb-4 p-3 bg-light rounded">
+                <h6 class="mb-3">Rincian Pembayaran</h6>
+                <div class="row mb-2">
+                    <div class="col-md-6">
+                        <small class="text-muted">Metode Pembayaran</small>
+                        <div class="fw-bold">{{ pembayaran.metode_pembayaran }}</div>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <small class="text-muted">Tanggal Bayar</small>
+                        <div class="fw-bold">
+                            {% if pembayaran.tanggal_pembayaran %}
+                                {{ pembayaran.tanggal_pembayaran.strftime('%d/%m/%Y %H:%M') }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row my-2">
+                    <div class="col-md-6">
+                        <small class="text-muted">Total Harga</small>
+                        <div>Rp {{ "{:,.0f}".format(float(transaksi.total_harga)) }}</div>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <small class="text-muted">Diskon</small>
+                        <div class="text-danger">- Rp {{ "{:,.0f}".format(float(pembayaran.diskon)) }}</div>
+                    </div>
+                </div>
+
+                {% if pembayaran.promo %}
+                <div class="row mb-2">
+                    <div class="col-md-6">
+                        <small class="text-muted">Promo</small>
+                        <div class="fw-bold">{{ pembayaran.promo.nama_promo }}</div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="row border-top pt-2">
+                    <div class="col-md-6">
+                        <small class="text-muted">Total Bayar</small>
+                        <div class="fs-5 fw-bold text-primary">Rp {{ "{:,.0f}".format(float(pembayaran.jumlah_bayar)) }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Catatan -->
+            {% if transaksi.catatan %}
+            <div class="mb-4 p-3 bg-light rounded">
+                <h6 class="mb-2">Catatan</h6>
+                <div>{{ transaksi.catatan }}</div>
+            </div>
+            {% endif %}
+
+            <!-- Action Buttons -->
+            <div class="sw-form-actions">
+                <a href="{{ url_for('transaksi.index') }}" class="sw-btn-muted px-5">Kembali</a>
+                <a href="{{ url_for('transaksi.edit', id_transaksi=transaksi.id_transaksi) }}" class="sw-btn-orange px-4">
+                    <i class="bi bi-pencil-fill"></i> Edit Transaksi
+                </a>
+                
+                {% if transaksi.status_transaksi != 'Diambil' %}
+                <div class="dropdown d-inline">
+                    <button class="sw-btn-primary dropdown-toggle px-4" type="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-arrow-repeat"></i> Ubah Status
+                    </button>
+                    <ul class="dropdown-menu">
+                        {% if transaksi.status_transaksi != 'Menunggu' %}
+                        <li>
+                            <form method="post" action="{{ url_for('transaksi.update_status', id_transaksi=transaksi.id_transaksi) }}" class="d-inline">
+                                <input type="hidden" name="status" value="Menunggu">
+                                <button type="submit" class="dropdown-item">Menunggu</button>
+                            </form>
+                        </li>
+                        {% endif %}
+                        
+                        {% if transaksi.status_transaksi != 'Diproses' %}
+                        <li>
+                            <form method="post" action="{{ url_for('transaksi.update_status', id_transaksi=transaksi.id_transaksi) }}" class="d-inline">
+                                <input type="hidden" name="status" value="Diproses">
+                                <button type="submit" class="dropdown-item">Diproses</button>
+                            </form>
+                        </li>
+                        {% endif %}
+                        
+                        {% if transaksi.status_transaksi != 'Selesai' %}
+                        <li>
+                            <form method="post" action="{{ url_for('transaksi.update_status', id_transaksi=transaksi.id_transaksi) }}" class="d-inline">
+                                <input type="hidden" name="status" value="Selesai">
+                                <button type="submit" class="dropdown-item">Selesai</button>
+                            </form>
+                        </li>
+                        {% endif %}
+                        
+                        {% if transaksi.status_transaksi != 'Diambil' %}
+                        <li>
+                            <form method="post" action="{{ url_for('transaksi.update_status', id_transaksi=transaksi.id_transaksi) }}" class="d-inline">
+                                <input type="hidden" name="status" value="Diambil">
+                                <button type="submit" class="dropdown-item">Diambil</button>
+                            </form>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

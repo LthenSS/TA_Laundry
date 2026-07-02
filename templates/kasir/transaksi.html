@@ -1,0 +1,185 @@
+{% extends "kasir/layout.html" %}
+
+{% block title %}Transaksi Laundry - Smart Wash Laundry{% endblock %}
+{% block page_title %}Transaksi Baru{% endblock %}
+
+{% block content %}
+<link href="{{ url_for('static', filename='css/kasir.css') }}" rel="stylesheet">
+<form method="post" class="sw-kasir-order" id="transactionForm">
+    <input type="hidden" name="form_token" value="{{ form_token }}">
+    <section class="sw-order-form">
+        <h2><i class="bi bi-person-circle"></i> Data Pelanggan</h2>
+
+        <div class="mb-4 position-relative">
+            <label class="form-label">Cari Pelanggan</label>
+            <input id="customerSearch" type="search" class="form-control sw-kasir-input" placeholder="Cari nama atau nomor HP..." autocomplete="off">
+            <div id="customerSuggestions" class="list-group position-absolute w-100 mt-1" style="z-index: 10;"></div>
+        </div>
+
+        <div class="mb-3 text-end">
+            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newCustomerModal">
+                <i class="bi bi-plus-lg"></i> Tambah Pelanggan Baru
+            </button>
+        </div>
+
+        <div id="customerInfo" class="card card-body mb-4" style="display: none;">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="mb-2 text-muted">Nama Pelanggan</div>
+                    <div id="selectedCustomerName" class="fw-bold"></div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-2 text-muted">Nomor HP</div>
+                    <div id="selectedCustomerPhone" class="fw-bold"></div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-2 text-muted">Tipe Pelanggan</div>
+                    <div id="selectedCustomerType" class="fw-bold">Member</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-2 text-muted">Total Point</div>
+                    <div id="selectedCustomerPoint" class="fw-bold"></div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-2 text-muted">Transaksi Terakhir</div>
+                    <div id="selectedCustomerLastTransaction" class="fw-bold"></div>
+                </div>
+            </div>
+
+            <!-- Redeem Point UI - Member Only -->
+            <div id="redeemPointSection" style="display: none; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #dee2e6;">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <span class="badge bg-success" style="font-size: 0.9rem;">★★★★★ MEMBER</span>
+                            <div class="text-muted">Total Poin Saat Ini</div>
+                            <div class="fw-bold text-info" id="redeemPointCount" style="font-size: 1.1rem;">0</div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="use_redeem" name="redeem_point" disabled>
+                            <label class="form-check-label" for="use_redeem">
+                                Redeem Point
+                            </label>
+                        </div>
+                        <div class="mt-2">
+                            <label for="redeem_point" class="form-label small">Poin yang ditukar</label>
+                            <input type="number" class="form-control form-control-sm" id="redeem_point" name="redeem_points" value="0" min="0" step="20">
+                        </div>
+                        <div class="mt-2 small text-muted" id="redeemPointMessage"></div>
+                        <div class="mt-2 small fw-bold text-primary" id="redeemPointPreview"></div>
+                    </div>
+                </div>
+            </div>
+
+            <input type="hidden" name="pelanggan_id" id="pelanggan_id">
+        </div>
+
+        <h2 class="mt-5"><i class="bi bi-basket2"></i> Layanan Laundry</h2>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-7">
+                <label for="layanan_id" class="form-label">Pilih Layanan</label>
+                <select id="layanan_id" name="layanan_id" class="form-select sw-kasir-input" required>
+                    <option value="">Pilih layanan...</option>
+                    {% for item in layanan %}
+                    <option value="{{ item.id_layanan }}" data-harga="{{ item.harga_perkg }}" data-estimasi="{{ item.estimasi_hari }}">
+                        {{ item.nama_layanan }} - {{ item.harga_rupiah() }}/Kg - {{ item.estimasi_hari }} Hari
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-5">
+                <label for="berat" class="form-label">Berat (Kg)</label>
+                <input id="berat" name="berat" type="number" class="form-control sw-kasir-input" min="0.1" step="0.1" placeholder="0.0" required>
+            </div>
+            <div class="col-md-4">
+                <div class="text-muted">Harga / Kg</div>
+                <div id="servicePrice" class="fw-bold">Rp 0</div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-muted">Estimasi</div>
+                <div id="serviceEstimate" class="fw-bold">-</div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-muted">Promo Otomatis</div>
+                <div id="promoName" class="fw-bold">Tidak ada promo</div>
+            </div>
+        </div>
+
+        <h2 class="mt-5"><i class="bi bi-wallet2"></i> Pembayaran</h2>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="metode_pembayaran" class="form-label">Metode Pembayaran</label>
+                <select id="metode_pembayaran" name="metode_pembayaran" class="form-select sw-kasir-input" required>
+                    <option value="">Pilih metode...</option>
+                    <option value="Cash">Cash</option>
+                    <option value="QRIS">QRIS</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label for="status_pembayaran" class="form-label">Status Payment</label>
+                <select id="status_pembayaran" name="status_pembayaran" class="form-select sw-kasir-input" required>
+                    <option value="Belum Bayar">Belum Bayar</option>
+                    <option value="Lunas">Lunas</option>
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <aside class="sw-order-summary">
+        <h2><i class="bi bi-cart4"></i> Data Pesanan</h2>
+        <div class="sw-summary-bottom">
+            <div class="sw-summary-line"><span>Subtotal</span><strong id="subtotalText">Rp 0</strong></div>
+            <div class="sw-summary-line discount"><span>Diskon (Promo)</span><strong id="discountText">- Rp 0</strong></div>
+            <div class="sw-total-box"><span>TOTAL BAYAR</span><strong id="totalText">Rp 0</strong></div>
+            <div class="sw-summary-line"><span>Status Laundry</span><strong>Antrian</strong></div>
+            <button type="submit" class="sw-confirm-btn" id="submitTransactionBtn">Konfirmasi Pesanan</button>
+        </div>
+    </aside>
+</form>
+
+<div class="modal fade" id="newCustomerModal" tabindex="-1" aria-labelledby="newCustomerModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="newCustomerModalLabel">Tambah Pelanggan Baru</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="newCustomerForm">
+                    <div class="mb-3">
+                        <label for="newCustomerName" class="form-label">Nama</label>
+                        <input type="text" class="form-control" id="newCustomerName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newCustomerPhone" class="form-label">Nomor HP</label>
+                        <input type="tel" class="form-control" id="newCustomerPhone" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newCustomerAddress" class="form-label">Alamat</label>
+                        <textarea class="form-control" id="newCustomerAddress" rows="3" required></textarea>
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">Simpan Pelanggan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1080;">
+    <div id="transaksiToast" class="toast align-items-center text-bg-dark border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div id="transaksiToastBody" class="toast-body"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/transaksi.js') }}"></script>
+{% endblock %}

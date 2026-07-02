@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}{% if pelanggan %}Edit Pelanggan{% else %}Tambah Pelanggan{% endif %} - Smart Wash Laundry{% endblock %}
+
+{% block content %}
+<div class="sw-form-wrap">
+    <section class="sw-modal-card">
+        <div class="sw-modal-heading">
+            <h1 class="sw-modal-title">
+                <span class="sw-modal-title-icon" style="background:{% if pelanggan %}#ff8a18{% else %}#99ddeb{% endif %}; color:#000;">
+                    <i class="bi {% if pelanggan %}bi-pencil-fill{% else %}bi-plus-lg{% endif %}"></i>
+                </span>
+                {% if pelanggan %}Edit Data Pelanggan{% else %}Form Tambah Pelanggan Baru{% endif %}
+            </h1>
+            <a href="{{ url_for('member.index') }}" class="sw-close-link">&times;</a>
+        </div>
+
+        <form class="sw-form" method="post">
+            <div class="mb-4">
+                <label for="nama" class="form-label">Nama Pelanggan <span class="sw-required">*</span></label>
+                <input type="text" class="form-control" id="nama" name="nama" value="{{ pelanggan.nama if pelanggan else '' }}" placeholder="Masukan nama pelanggan" required>
+            </div>
+
+            <div class="mb-4">
+                <label for="no_hp" class="form-label">Nomor HP <span class="sw-required">*</span></label>
+                <input type="tel" class="form-control" id="no_hp" name="no_hp" value="{{ pelanggan.no_hp if pelanggan else '' }}" placeholder="Contoh: 081234567890" pattern="[0-9]{10,15}" required>
+                <small class="text-muted">Minimal 10 digit, maksimal 15 digit</small>
+            </div>
+
+            <div class="mb-4">
+                <label for="alamat" class="form-label">Alamat <span class="sw-required">*</span></label>
+                <textarea class="form-control" id="alamat" name="alamat" rows="4" placeholder="Masukan alamat lengkap" required>{{ pelanggan.alamat if pelanggan else '' }}</textarea>
+            </div>
+
+            <div class="sw-form-actions">
+                <a href="{{ url_for('member.index') }}" class="sw-btn-muted px-5">Batal</a>
+                <button type="submit" class="{% if pelanggan %}sw-btn-orange{% else %}sw-btn-primary{% endif %} px-4"><i class="bi bi-save"></i> {% if pelanggan %}Simpan Perubahan{% else %}Simpan Pelanggan{% endif %}</button>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}

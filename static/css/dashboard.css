@@ -1,0 +1,346 @@
+/* Dashboard Styles */
+
+:root {
+    --dashboard-primary: #1f6fbd;
+    --dashboard-success: #1f9d6e;
+    --dashboard-warning: #f2b01b;
+    --dashboard-danger: #e85151;
+    --dashboard-info: #0dcaf0;
+    --dashboard-purple: #6f42c1;
+    --dashboard-light: #f7fbfd;
+    --dashboard-border: #d7e4e8;
+    --dashboard-text: #17212b;
+    --dashboard-muted: #6f7d8a;
+}
+
+/* Dashboard Header */
+.dashboard-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid var(--dashboard-border);
+}
+
+.dashboard-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--dashboard-text);
+    margin-bottom: 0.25rem;
+}
+
+.dashboard-subtitle {
+    font-size: 0.95rem;
+    color: var(--dashboard-muted);
+    margin: 0;
+}
+
+/* Metric Cards */
+.metric-card {
+    background: white;
+    border: 1px solid var(--dashboard-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+.metric-card-header {
+    width: 60px;
+    height: 60px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    flex-shrink: 0;
+}
+
+.metric-card-primary .metric-card-header {
+    background: rgba(31, 111, 189, 0.1);
+    color: var(--dashboard-primary);
+}
+
+.metric-card-success .metric-card-header {
+    background: rgba(31, 157, 110, 0.1);
+    color: var(--dashboard-success);
+}
+
+.metric-card-info .metric-card-header {
+    background: rgba(13, 202, 240, 0.1);
+    color: var(--dashboard-info);
+}
+
+.metric-card-warning .metric-card-header {
+    background: rgba(242, 176, 27, 0.1);
+    color: var(--dashboard-warning);
+}
+
+.metric-card-purple .metric-card-header {
+    background: rgba(111, 66, 193, 0.1);
+    color: var(--dashboard-purple);
+}
+
+.metric-card-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.metric-label {
+    font-size: 0.85rem;
+    color: var(--dashboard-muted);
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+}
+
+.metric-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--dashboard-text);
+    margin: 0;
+    word-break: break-word;
+}
+
+/* Dashboard Cards */
+.dashboard-card {
+    border: 1px solid var(--dashboard-border);
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.dashboard-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+.dashboard-card .card-header {
+    background: #f9fafb;
+    padding: 1rem 1.25rem;
+}
+
+.dashboard-card .card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--dashboard-text);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.dashboard-card .card-body {
+    padding: 1.5rem 1.25rem;
+}
+
+/* Status Grid */
+.status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+}
+
+.status-item {
+    text-align: center;
+}
+
+.status-badge {
+    width: 60px;
+    height: 60px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.5rem;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.status-antrian {
+    background: linear-gradient(135deg, #6c757d, #495057);
+}
+
+.status-diproses {
+    background: linear-gradient(135deg, #0d6efd, #0dcaf0);
+}
+
+.status-ready {
+    background: linear-gradient(135deg, #ffc107, #fd7e14);
+}
+
+.status-selesai {
+    background: linear-gradient(135deg, #198754, #20c997);
+}
+
+.status-count {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--dashboard-text);
+    margin: 0 0 0.25rem 0;
+}
+
+.status-label {
+    font-size: 0.85rem;
+    color: var(--dashboard-muted);
+    margin: 0;
+}
+
+/* Services List */
+.services-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.service-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+}
+
+.service-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.service-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--dashboard-text);
+    margin: 0 0 0.25rem 0;
+}
+
+.service-count {
+    font-size: 0.8rem;
+    color: var(--dashboard-muted);
+    margin: 0;
+}
+
+.service-revenue {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--dashboard-success);
+    margin: 0 0 0 1rem;
+    white-space: nowrap;
+}
+
+/* Charts */
+#revenueChart,
+#transactionChart {
+    max-height: 300px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .dashboard-title {
+        font-size: 1.5rem;
+    }
+
+    .metric-card {
+        padding: 1rem;
+    }
+
+    .metric-card-header {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+    }
+
+    .metric-value {
+        font-size: 1.25rem;
+    }
+
+    .status-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
+    .service-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .service-revenue {
+        margin-left: 0;
+        margin-top: 0.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .dashboard-header {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+    }
+
+    .dashboard-title {
+        font-size: 1.25rem;
+    }
+
+    .dashboard-subtitle {
+        font-size: 0.85rem;
+    }
+
+    .metric-card {
+        padding: 0.75rem;
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .metric-card-header {
+        width: 50px;
+        height: 50px;
+        margin: 0 auto;
+    }
+
+    .metric-label,
+    .metric-value {
+        text-align: center;
+    }
+
+    .metric-value {
+        font-size: 1.1rem;
+    }
+
+    .status-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+
+    .status-badge {
+        width: 50px;
+        height: 50px;
+        font-size: 1.25rem;
+    }
+
+    .status-count {
+        font-size: 1.25rem;
+    }
+
+    .status-label {
+        font-size: 0.75rem;
+    }
+}
+
+/* Scrollbar for services list */
+.services-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.services-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.services-list::-webkit-scrollbar-thumb {
+    background: var(--dashboard-border);
+    border-radius: 3px;
+}
+
+.services-list::-webkit-scrollbar-thumb:hover {
+    background: var(--dashboard-muted);
+}
