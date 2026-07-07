@@ -1,4 +1,9 @@
+from urllib.parse import urlsplit, urlunsplit
+
 from flask import Flask
+from sqlalchemy import create_engine, text
+from werkzeug.security import generate_password_hash
+
 from config import Config
 from models import db
 from routes.auth import auth_bp
@@ -12,11 +17,49 @@ from routes.promo import promo_bp
 from routes.transaksi import transaksi_bp
 
 
+def ensure_database_exists(app):
+    database_uri = app.config.get("SQLALCHEMY_DATABASE_URI")
+    if not database_uri:
+        return
+
+    parsed = urlsplit(database_uri)
+    database_name = parsed.path.lstrip("/")
+    if not database_name:
+        return
+
+    admin_uri = urlunsplit((parsed.scheme, parsed.netloc, "", parsed.query, parsed.fragment))
+    try:
+        engine = create_engine(admin_uri, isolation_level="AUTOCOMMIT")
+        with engine.connect() as connection:
+            connection.execute(text(f"CREATE DATABASE IF NOT EXISTS `{database_name}`"))
+        engine.dispose()
+    except Exception as exc:
+        print(f"Unable to ensure database exists: {exc}")
+
+
+def seed_default_user(app):
+    with app.app_context():
+        from models.user import User
+
+        if User.query.filter_by(username="owner").first():
+            return
+
+        default_user = User(
+            nama="Owner",
+            username="owner",
+            password=generate_password_hash("owner123"),
+            role="Owner",
+        )
+        db.session.add(default_user)
+        db.session.commit()
+
+
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
     print("CONFIG FROM APP:", app.config.get("WHATSAPP_API_KEY"))
 
+    ensure_database_exists(app)
     db.init_app(app)
 
     app.register_blueprint(auth_bp)
@@ -28,6 +71,10 @@ def create_app():
     app.register_blueprint(member_bp)
     app.register_blueprint(promo_bp)
     app.register_blueprint(transaksi_bp)
+
+    with app.app_context():
+        db.create_all()
+        seed_default_user(app)
 
     return app
 
