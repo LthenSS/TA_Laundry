@@ -183,8 +183,17 @@ def _get_table_data(dt_start, dt_end, search='', sort_by='tanggal', page=1, per_
             )
         )
     
-    # Group by transaction
-    table_query = table_query.group_by(Transaksi.id_transaksi)
+    # Group by transaction - include all non-aggregated columns for TiDB compatibility
+    table_query = table_query.group_by(
+        Transaksi.id_transaksi,
+        Transaksi.kode_transaksi,
+        Transaksi.tanggal,
+        Transaksi.status_laundry,
+        Transaksi.status_pembayaran,
+        Transaksi.total,
+        Pelanggan.nama,
+        Pelanggan.is_member
+    )
     
     # Apply sorting
     if sort_by == 'nama':
@@ -253,8 +262,19 @@ def _get_all_table_data(dt_start, dt_end, search='', sort_by='tanggal'):
             )
         )
     
-    # Group by transaction
-    table_query = table_query.group_by(Transaksi.id_transaksi)
+    # Group by transaction - include all non-aggregated columns for TiDB compatibility
+    table_query = table_query.group_by(
+        Transaksi.id_transaksi,
+        Transaksi.kode_transaksi,
+        Transaksi.tanggal,
+        Transaksi.status_laundry,
+        Transaksi.status_pembayaran,
+        Transaksi.total,
+        Pelanggan.nama,
+        Pelanggan.is_member
+    )
+    
+    # Apply sorting
     if sort_by == 'nama':
         table_query = table_query.order_by(Pelanggan.nama.asc())
     elif sort_by == 'status_pembayaran':

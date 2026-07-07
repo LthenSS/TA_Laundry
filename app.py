@@ -41,17 +41,25 @@ def seed_default_user(app):
     with app.app_context():
         from models.user import User
 
-        if User.query.filter_by(username="owner").first():
-            return
+        if User.query.filter_by(username="owner").first() is None:
+            owner_user = User(
+                nama="Owner",
+                username="owner",
+                password=generate_password_hash("owner123"),
+                role="Owner",
+            )
+            db.session.add(owner_user)
+            db.session.commit()
 
-        default_user = User(
-            nama="Owner",
-            username="owner",
-            password=generate_password_hash("owner123"),
-            role="Owner",
-        )
-        db.session.add(default_user)
-        db.session.commit()
+        if User.query.filter_by(username="kasir").first() is None:
+            kasir_user = User(
+                nama="Kasir",
+                username="kasir",
+                password=generate_password_hash("kasir123"),
+                role="Karyawan",
+            )
+            db.session.add(kasir_user)
+            db.session.commit()
 
 
 def create_app():
