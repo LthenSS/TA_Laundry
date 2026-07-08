@@ -12,81 +12,98 @@
 </form>
 
 <section class="sw-kasir-panel mb-5">
-    <header class="sw-kasir-panel-title"><i class="bi bi-person-badge-fill"></i> Pelanggan Member</header>
-    <div class="table-responsive">
-        <table class="sw-kasir-table">
-            <thead>
-                <tr>
-                    <th>Nama</th>
-                    <th>Nomor HP</th>
-                    <th>Alamat</th>
-                    <th>Status</th>
-                    <th>Total Point</th>
-                    <th>Total Transaksi</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for customer in member_rows %}
-                <tr>
-                    <td>{{ customer.nama }}</td>
-                    <td>{{ customer.no_hp }}</td>
-                    <td>{{ customer.alamat }}</td>
-                    <td><span class="badge bg-success">Member</span></td>
-                    <td>{{ customer.total_point }} Poin</td>
-                    <td>{{ customer.total_transaksi }}</td>
-                    <td>
-                        <a href="{{ url_for('karyawan.member_detail', id=customer.id) }}" class="btn btn-sm btn-outline-primary">Detail</a>
-                        <a href="{{ url_for('karyawan.member_edit', id=customer.id) }}" class="btn btn-sm btn-outline-warning ms-1">Edit</a>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="7" class="text-center text-muted py-4">Belum ada pelanggan member untuk ditampilkan.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</section>
+    <header class="sw-kasir-panel-title"><i class="bi bi-people-fill"></i> Data Pelanggan</header>
+    <div class="px-4 pb-4">
+        <ul class="nav nav-tabs sw-member-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="member-tab" data-bs-toggle="tab" data-bs-target="#member-panel" type="button" role="tab" aria-controls="member-panel" aria-selected="true">
+                    Member <span class="badge bg-success ms-2">{{ member_rows|length }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="non-member-tab" data-bs-toggle="tab" data-bs-target="#non-member-panel" type="button" role="tab" aria-controls="non-member-panel" aria-selected="false">
+                    Non Member <span class="badge bg-secondary ms-2">{{ non_member_rows|length }}</span>
+                </button>
+            </li>
+        </ul>
 
-<section class="sw-kasir-panel">
-    <header class="sw-kasir-panel-title"><i class="bi bi-people-fill"></i> Pelanggan Non Member</header>
-    <div class="table-responsive">
-        <table class="sw-kasir-table">
-            <thead>
-                <tr>
-                    <th>Nama</th>
-                    <th>Nomor HP</th>
-                    <th>Alamat</th>
-                    <th>Status</th>
-                    <th>Total Transaksi</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for customer in non_member_rows %}
-                <tr>
-                    <td>{{ customer.nama }}</td>
-                    <td>{{ customer.no_hp }}</td>
-                    <td>{{ customer.alamat }}</td>
-                    <td><span class="badge bg-secondary">Non Member</span></td>
-                    <td>{{ customer.total_transaksi }}</td>
-                    <td>
-                        <a href="{{ url_for('karyawan.member_detail', id=customer.id) }}" class="btn btn-sm btn-outline-primary">Detail</a>
-                        <a href="{{ url_for('karyawan.member_edit', id=customer.id) }}" class="btn btn-sm btn-outline-warning ms-1">Edit</a>
-                        <form method="post" action="{{ url_for('karyawan.jadikan_member', id=customer.id) }}" class="d-inline" onsubmit="return confirm('Apakah Anda yakin ingin menjadikan pelanggan ini sebagai Member?')">
-                            <button type="submit" class="btn btn-sm btn-success ms-1">Jadikan Member</button>
-                        </form>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="6" class="text-center text-muted py-4">Belum ada pelanggan non member untuk ditampilkan.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="tab-content mt-4">
+            <div class="tab-pane fade show active" id="member-panel" role="tabpanel" aria-labelledby="member-tab">
+                <div class="table-responsive">
+                    <table class="sw-kasir-table">
+                        <thead>
+                            <tr>
+                                <th>Nama</th>
+                                <th>Nomor HP</th>
+                                <th>Alamat</th>
+                                <th>Status</th>
+                                <th>Total Point</th>
+                                <th>Total Transaksi</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for customer in member_rows %}
+                            <tr>
+                                <td>{{ customer.nama }}</td>
+                                <td>{{ customer.no_hp }}</td>
+                                <td>{{ customer.alamat }}</td>
+                                <td><span class="badge bg-success">Member</span></td>
+                                <td>{{ customer.total_point }} Poin</td>
+                                <td>{{ customer.total_transaksi }}</td>
+                                <td>
+                                    <a href="{{ url_for('karyawan.member_detail', id=customer.id) }}" class="btn btn-sm btn-outline-primary">Detail</a>
+                                    <a href="{{ url_for('karyawan.member_edit', id=customer.id) }}" class="btn btn-sm btn-outline-warning ms-1">Edit</a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-4">Belum ada pelanggan member untuk ditampilkan.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="non-member-panel" role="tabpanel" aria-labelledby="non-member-tab">
+                <div class="table-responsive">
+                    <table class="sw-kasir-table">
+                        <thead>
+                            <tr>
+                                <th>Nama</th>
+                                <th>Nomor HP</th>
+                                <th>Alamat</th>
+                                <th>Status</th>
+                                <th>Total Transaksi</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for customer in non_member_rows %}
+                            <tr>
+                                <td>{{ customer.nama }}</td>
+                                <td>{{ customer.no_hp }}</td>
+                                <td>{{ customer.alamat }}</td>
+                                <td><span class="badge bg-secondary">Non Member</span></td>
+                                <td>{{ customer.total_transaksi }}</td>
+                                <td>
+                                    <a href="{{ url_for('karyawan.member_detail', id=customer.id) }}" class="btn btn-sm btn-outline-primary">Detail</a>
+                                    <a href="{{ url_for('karyawan.member_edit', id=customer.id) }}" class="btn btn-sm btn-outline-warning ms-1">Edit</a>
+                                    <form method="post" action="{{ url_for('karyawan.jadikan_member', id=customer.id) }}" class="d-inline" onsubmit="return confirm('Apakah Anda yakin ingin menjadikan pelanggan ini sebagai Member?')">
+                                        <button type="submit" class="btn btn-sm btn-success ms-1">Jadikan Member</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">Belum ada pelanggan non member untuk ditampilkan.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 {% endblock %}

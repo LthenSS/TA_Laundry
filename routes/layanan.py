@@ -14,8 +14,12 @@ layanan_bp = Blueprint("layanan", __name__, url_prefix="/layanan")
 @login_required
 @owner_required
 def index():
-    data_layanan = Layanan.query.order_by(Layanan.id_layanan.desc()).all()
-    return render_template("layanan/index.html", data_layanan=data_layanan)
+    search = request.args.get("q", "").strip()
+    data_layanan = Layanan.query
+    if search:
+        data_layanan = data_layanan.filter(Layanan.nama_layanan.ilike(f"%{search}%"))
+    data_layanan = data_layanan.order_by(Layanan.id_layanan.desc()).all()
+    return render_template("layanan/index.html", data_layanan=data_layanan, search=search)
 
 
 @layanan_bp.route("/tambah", methods=["GET", "POST"])

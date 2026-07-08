@@ -13,8 +13,20 @@ class Pelanggan(db.Model):
     is_member = db.Column(db.Boolean, default=False, nullable=True)
     total_point = db.Column(db.Integer, default=0, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now, nullable=True)
-    transaksi = db.relationship("Transaksi", back_populates="pelanggan", foreign_keys="Transaksi.pelanggan_id", lazy="dynamic")
-    point_history = db.relationship("PointMember", back_populates="pelanggan", foreign_keys="PointMember.pelanggan_id", lazy="dynamic")
+    transaksi = db.relationship(
+        "Transaksi",
+        back_populates="pelanggan",
+        foreign_keys="Transaksi.pelanggan_id",
+        lazy="dynamic",
+    )
+    point_history = db.relationship(
+        "PointMember",
+        back_populates="pelanggan",
+        foreign_keys="PointMember.pelanggan_id",
+        lazy="dynamic",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
 
     @property
     def jenis_pelanggan(self):

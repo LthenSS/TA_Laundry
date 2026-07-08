@@ -26,12 +26,38 @@ class Transaksi(db.Model):
     promo_id_promo = db.Column(db.Integer, db.ForeignKey("promo.id_promo"), nullable=True)
     pelanggan_id = db.Column(db.Integer, db.ForeignKey("pelanggan.id"), nullable=True)
     catatan = db.Column(db.Text, nullable=True)
-    pelanggan = db.relationship("Pelanggan", foreign_keys=[pelanggan_id], back_populates="transaksi")
+    pelanggan = db.relationship(
+        "Pelanggan",
+        foreign_keys=[pelanggan_id],
+        back_populates="transaksi",
+        passive_deletes=True,
+    )
     user = db.relationship("User", foreign_keys=[users_id_users])
-    promo = db.relationship("Promo", foreign_keys=[promo_id_promo])
-    detail_transaksi = db.relationship("DetailTransaksi", back_populates="transaksi", foreign_keys="DetailTransaksi.transaksi_id_transaksi", lazy="dynamic")
-    pembayaran = db.relationship("Pembayaran", back_populates="transaksi", foreign_keys="Pembayaran.transaksi_id_transaksi", uselist=False)
-    point_history = db.relationship("PointMember", back_populates="transaksi", foreign_keys="PointMember.transaksi_id_transaksi", lazy="dynamic")
+    promo = db.relationship("Promo", foreign_keys=[promo_id_promo], passive_deletes=True)
+    detail_transaksi = db.relationship(
+        "DetailTransaksi",
+        back_populates="transaksi",
+        foreign_keys="DetailTransaksi.transaksi_id_transaksi",
+        lazy="dynamic",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+    pembayaran = db.relationship(
+        "Pembayaran",
+        back_populates="transaksi",
+        foreign_keys="Pembayaran.transaksi_id_transaksi",
+        uselist=False,
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+    point_history = db.relationship(
+        "PointMember",
+        back_populates="transaksi",
+        foreign_keys="PointMember.transaksi_id_transaksi",
+        lazy="dynamic",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
 
     def format_id(self):
         """Format transaction ID"""
