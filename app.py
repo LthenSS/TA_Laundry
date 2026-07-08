@@ -1,4 +1,10 @@
+import os
+import sys
 from urllib.parse import urlsplit, urlunsplit
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
 
 from flask import Flask
 from sqlalchemy import create_engine, text
@@ -15,7 +21,6 @@ from routes.layanan import layanan_bp
 from routes.member import member_bp
 from routes.promo import promo_bp
 from routes.transaksi import transaksi_bp
-from seed_sample_data import seed_data
 
 
 def ensure_database_exists(app):
@@ -87,7 +92,6 @@ def create_app():
     with app.app_context():
         db.create_all()
         seed_default_user(app)
-        seed_data(app)
 
     return app
 
