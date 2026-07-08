@@ -15,6 +15,7 @@ from routes.layanan import layanan_bp
 from routes.member import member_bp
 from routes.promo import promo_bp
 from routes.transaksi import transaksi_bp
+from seed_sample_data import seed_data
 
 
 def ensure_database_exists(app):
@@ -86,6 +87,7 @@ def create_app():
     with app.app_context():
         db.create_all()
         seed_default_user(app)
+        seed_data(app)
 
     return app
 

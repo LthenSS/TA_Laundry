@@ -29,7 +29,7 @@ class Config:
         if database_url:
             return database_url
 
-        if os.getenv("VERCEL") == "1":
+        if os.getenv("VERCEL") == "1" and os.getenv("USE_SQLITE_FALLBACK") == "1":
             db_path = os.getenv("DB_PATH", "/tmp/smartwash.db")
             if db_path.startswith("/"):
                 return f"sqlite:////{db_path.lstrip('/')}"

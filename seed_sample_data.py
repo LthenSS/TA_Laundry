@@ -36,8 +36,9 @@ def get_or_create(model, defaults=None, **kwargs):
     return instance, True
 
 
-def seed_data():
-    app = create_app()
+def seed_data(app=None):
+    if app is None:
+        app = create_app()
     with app.app_context():
         db.create_all()
 
