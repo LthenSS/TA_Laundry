@@ -204,11 +204,16 @@ def _fetch_qris_payload(transaksi):
     transaction_id = transaksi.id_transaksi
 
     if not api_url:
+        import urllib.parse
+        # Generate a dummy QRIS payload (EMVCo format approximation)
+        amount_str = str(int(amount))
+        qris_data = f"00020101021126670016COM.NOBUBANK.WWW01189360050300000879140214300346369018440315ID102124503463690184520454995303360540{len(amount_str):02d}{amount_str}5802ID5919Smart Wash Laundry6015Jakarta Selatan61051219062160712{transaction_code}6304"
+        encoded_data = urllib.parse.quote(qris_data)
         return {
-            "note": "QRIS API belum dikonfigurasi.",
+            "note": "Mode Demo: Menampilkan QRIS (Mock API).",
             "amount": amount,
             "transaction_code": transaction_code,
-            "qris_url": f"https://example.com/qris-pay/{transaction_id}",
+            "qris_url": f"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={encoded_data}",
             "provider_response": None,
         }
 
@@ -557,6 +562,11 @@ def transaksi_detail(id_transaksi):
     if point_earned <= 0 and (transaksi_item.total or Decimal("0")) > 0:
         point_earned = int((transaksi_item.total or Decimal("0")) // Decimal("5000"))
 
+    qris_url = None
+    if pembayaran and getattr(pembayaran, 'metode_pembayaran', getattr(pembayaran, 'metode', '')) == 'QRIS':
+        qris_payload = _fetch_qris_payload(transaksi_item)
+        qris_url = qris_payload.get('qris_url') if isinstance(qris_payload, dict) else None
+
     return render_template(
         "kasir/transaksi_detail.html",
         transaksi=transaksi_item,
@@ -565,6 +575,7 @@ def transaksi_detail(id_transaksi):
         promo_discount=promo_discount,
         redeem_discount=Decimal(redeem_discount),
         point_earned=int(point_earned or 0),
+        qris_url=qris_url,
         display_status=_display_status,
         format_currency=_format_currency,
     )
@@ -793,7 +804,7 @@ def pembayaran():
 
         try:
             transaksi = Transaksi.query.get_or_404(int(transaksi_id))
-            if transaksi.status_laundry != "Siap Diambil" or transaksi.status_pembayaran != "Belum Bayar":
+            if transaksi.status_pembayaran != "Belum Bayar":
                 flash("Transaksi tidak tersedia untuk pembayaran.", "warning")
                 return redirect(url_for("karyawan.pembayaran"))
 
@@ -809,7 +820,8 @@ def pembayaran():
             db.session.add(pembayaran)
 
             transaksi.status_pembayaran = "Lunas"
-            transaksi.status_laundry = "Selesai"
+            if transaksi.status_laundry == "Siap Diambil":
+                transaksi.status_laundry = "Selesai"
 
             if pelanggan and getattr(pelanggan, 'is_member', False):
                 _apply_member_points_for_payment(transaksi, pelanggan, redeem_points=0)
@@ -828,7 +840,6 @@ def pembayaran():
     end_date = request.args.get("end_date", "").strip()
 
     query = Transaksi.query.join(Pelanggan, Transaksi.pelanggan_id == Pelanggan.id).filter(
-        Transaksi.status_laundry == "Siap Diambil",
         Transaksi.status_pembayaran == "Belum Bayar",
     )
 
@@ -889,7 +900,7 @@ def qris():
 
     try:
         transaksi = Transaksi.query.get_or_404(int(transaksi_id))
-        if transaksi.status_laundry != "Siap Diambil" or transaksi.status_pembayaran != "Belum Bayar":
+        if transaksi.status_pembayaran != "Belum Bayar":
             return jsonify(success=False, message="Transaksi tidak tersedia untuk QRIS."), 400
 
         qris_payload = _fetch_qris_payload(transaksi)
@@ -897,6 +908,24 @@ def qris():
     except Exception as e:
         current_app.logger.exception("Gagal menyiapkan data QRIS.")
         return jsonify(success=False, message=str(e)), 500
+
+
+@kasir_bp.route("/api/qris/generate", methods=["POST"])
+@login_required
+@karyawan_required
+def api_qris_generate():
+    data = request.json or {}
+    amount = float(data.get("amount", 0))
+    # Dummy transaction code just for display purposes
+    transaction_code = "TRX-PREVIEW"
+    
+    import urllib.parse
+    amount_str = str(int(amount))
+    qris_data = f"00020101021126670016COM.NOBUBANK.WWW01189360050300000879140214300346369018440315ID102124503463690184520454995303360540{len(amount_str):02d}{amount_str}5802ID5919Smart Wash Laundry6015Jakarta Selatan61051219062160712{transaction_code}6304"
+    encoded_data = urllib.parse.quote(qris_data)
+    
+    qris_url = f"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={encoded_data}"
+    return jsonify(success=True, qris_url=qris_url)
 
 
 @kasir_bp.route('/riwayat')

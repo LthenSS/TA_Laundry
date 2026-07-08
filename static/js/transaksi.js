@@ -271,6 +271,47 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!canSubmit && redeemPointCheckbox.checked) {
             submitTransactionBtn.textContent = 'Konfirmasi Pesanan';
         }
+
+        const metodePembayaran = document.getElementById('metode_pembayaran');
+        const statusPembayaran = document.getElementById('status_pembayaran');
+        if (metodePembayaran && metodePembayaran.value === 'QRIS' && statusPembayaran && statusPembayaran.value === 'Lunas' && finalTotal > 0 && canSubmit) {
+            generateQrisCode(finalTotal);
+        } else {
+            const qrisContainer = document.getElementById('qrisContainer');
+            if (qrisContainer) qrisContainer.style.display = 'none';
+        }
+    }
+
+    async function generateQrisCode(amount) {
+        const qrisContainer = document.getElementById('qrisContainer');
+        const qrisImage = document.getElementById('qrisImage');
+        const qrisLoading = document.getElementById('qrisLoading');
+        
+        if (!qrisContainer || !qrisImage || !qrisLoading) return;
+        
+        qrisContainer.style.display = 'block';
+        qrisLoading.classList.remove('d-none');
+        qrisImage.classList.add('d-none');
+        
+        try {
+            const response = await fetch('/karyawan/api/qris/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount: amount })
+            });
+            const data = await response.json();
+            if (data.success && data.qris_url) {
+                qrisImage.src = data.qris_url;
+                qrisImage.onload = () => {
+                    qrisLoading.classList.add('d-none');
+                    qrisImage.classList.remove('d-none');
+                };
+            } else {
+                qrisContainer.style.display = 'none';
+            }
+        } catch (e) {
+            qrisContainer.style.display = 'none';
+        }
     }
 
     function validateAndSubmit(event) {
@@ -325,6 +366,30 @@ document.addEventListener('DOMContentLoaded', () => {
         redeemPointInput.value = redeemPointInput.value.replace(/[^0-9]/g, '');
         calculateTotals();
     });
+    
+    const metodePembayaran = document.getElementById('metode_pembayaran');
+    const statusPembayaran = document.getElementById('status_pembayaran');
+    
+    function checkQrisDisplay() {
+        const finalTotalStr = totalText.textContent.replace(/[^0-9]/g, '');
+        const finalTotal = parseInt(finalTotalStr, 10) || 0;
+        const canSubmit = !submitTransactionBtn.disabled;
+        
+        if (metodePembayaran && metodePembayaran.value === 'QRIS' && statusPembayaran && statusPembayaran.value === 'Lunas' && finalTotal > 0 && canSubmit) {
+            generateQrisCode(finalTotal);
+        } else {
+            const qrisContainer = document.getElementById('qrisContainer');
+            if (qrisContainer) qrisContainer.style.display = 'none';
+        }
+    }
+    
+    if (metodePembayaran) {
+        metodePembayaran.addEventListener('change', checkQrisDisplay);
+    }
+    if (statusPembayaran) {
+        statusPembayaran.addEventListener('change', checkQrisDisplay);
+    }
+
     newCustomerForm.addEventListener('submit', submitNewCustomer);
     transactionForm.addEventListener('submit', validateAndSubmit);
 });

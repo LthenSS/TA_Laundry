@@ -178,6 +178,13 @@
             <strong>Thank You</strong>
         </div>
 
+        {% if qris_url and transaksi.status_pembayaran == 'Belum Bayar' %}
+        <div class="text-center mt-4 border-top pt-3">
+            <h6 class="fw-bold mb-2">Scan QRIS untuk Membayar</h6>
+            <img src="{{ qris_url }}" alt="QRIS Code" class="img-fluid border p-2 bg-white" style="max-width: 200px;">
+        </div>
+        {% endif %}
+
         <div class="text-end mt-4 no-print">
             <a href="{{ url_for('karyawan.transaksi') }}" class="btn btn-secondary">Back</a>
             <button type="button" class="btn btn-primary ms-2" onclick="window.print()">

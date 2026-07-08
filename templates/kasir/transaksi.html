@@ -126,6 +126,19 @@
                     <option value="Lunas">Lunas</option>
                 </select>
             </div>
+            
+            <div class="col-12" id="qrisContainer" style="display: none;">
+                <div class="card card-body bg-light text-center border-0 shadow-sm mt-2">
+                    <h6 class="mb-3 text-primary"><i class="bi bi-qr-code-scan"></i> Scan QRIS untuk Membayar</h6>
+                    <div id="qrisImageWrapper" class="d-flex justify-content-center">
+                        <div class="spinner-border text-primary" role="status" id="qrisLoading">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <img id="qrisImage" src="" alt="QRIS Code" class="img-fluid border rounded p-2 bg-white d-none" style="max-width: 200px;">
+                    </div>
+                    <div class="text-muted small mt-2">Silakan scan menggunakan aplikasi e-Wallet atau Mobile Banking Anda.</div>
+                </div>
+            </div>
         </div>
     </section>
 

@@ -21,7 +21,11 @@ document.addEventListener('DOMContentLoaded', function () {
         qrisNote.textContent = data.note || 'QRIS API respons siap.';
         qrisUrlContainer.innerHTML = '';
         if (data.qris_url) {
-            qrisUrlContainer.innerHTML = '<strong>Link QRIS:</strong> <a href="' + data.qris_url + '" target="_blank" rel="noopener noreferrer">' + data.qris_url + '</a>';
+            if (data.qris_url.includes('qrserver') || data.qris_url.match(/\.(jpeg|jpg|gif|png)$/) != null) {
+                qrisUrlContainer.innerHTML = '<div class="text-center mt-3 mb-3"><img src="' + data.qris_url + '" alt="QRIS" class="img-fluid border rounded shadow-sm" style="max-width: 250px;"></div>';
+            } else {
+                qrisUrlContainer.innerHTML = '<strong>Link QRIS:</strong> <a href="' + data.qris_url + '" target="_blank" rel="noopener noreferrer">' + data.qris_url + '</a>';
+            }
         }
         if (data.provider_response) {
             try {
