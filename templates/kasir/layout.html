@@ -36,6 +36,9 @@
                         <i class="bi bi-arrow-counterclockwise"></i><span>Status Laundry</span>
                     </a>
                     <a class="sw-kasir-nav-item {% if request.endpoint == 'karyawan.pembayaran' %}active{% endif %}" href="{{ url_for('karyawan.pembayaran') }}">
+                        <i class="bi bi-cash-stack"></i><span>Pembayaran</span>
+                    </a>
+                    <a class="sw-kasir-nav-item {% if request.endpoint == 'karyawan.riwayat' %}active{% endif %}" href="{{ url_for('karyawan.riwayat') }}">
                         <i class="bi bi-clock-history"></i><span>Riwayat Transaksi</span>
                     </a>
                     <!-- Sidebar logout removed; topbar provides logout -->

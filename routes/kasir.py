@@ -196,6 +196,63 @@ def _apply_member_points_for_payment(transaksi, customer, redeem_points=0):
     customer.total_point = (customer.total_point or 0) - redeem_points + points_earned
 
 
+def _fetch_qris_payload(transaksi):
+    api_url = current_app.config.get("QRIS_API_URL", "") or ""
+    api_key = current_app.config.get("QRIS_API_KEY", "") or ""
+    amount = float(transaksi.total or 0)
+    transaction_code = getattr(transaksi, "kode_transaksi", transaksi.id_transaksi)
+    transaction_id = transaksi.id_transaksi
+
+    if not api_url:
+        return {
+            "note": "QRIS API belum dikonfigurasi.",
+            "amount": amount,
+            "transaction_code": transaction_code,
+            "qris_url": f"https://example.com/qris-pay/{transaction_id}",
+            "provider_response": None,
+        }
+
+    payload = {
+        "amount": amount,
+        "transaction_id": transaction_id,
+        "transaction_code": transaction_code,
+        "description": f"Pembayaran {transaction_code}",
+    }
+    headers = {}
+    if api_key:
+        headers["Authorization"] = api_key
+
+    try:
+        response = requests.post(api_url, json=payload, headers=headers, timeout=10)
+        response.raise_for_status()
+        response_json = response.json()
+        return {
+            "note": "QRIS API response berhasil diperoleh.",
+            "amount": amount,
+            "transaction_code": transaction_code,
+            "qris_url": response_json.get("qris_url") if isinstance(response_json, dict) else None,
+            "provider_response": response_json,
+        }
+    except requests.exceptions.RequestException:
+        current_app.logger.exception("QRIS API request gagal.")
+        return {
+            "note": "QRIS API request gagal, gunakan fallback.",
+            "amount": amount,
+            "transaction_code": transaction_code,
+            "qris_url": f"https://example.com/qris-pay/{transaction_id}",
+            "provider_response": None,
+        }
+    except ValueError:
+        current_app.logger.exception("QRIS API response tidak valid.")
+        return {
+            "note": "QRIS API response tidak valid.",
+            "amount": amount,
+            "transaction_code": transaction_code,
+            "qris_url": f"https://example.com/qris-pay/{transaction_id}",
+            "provider_response": None,
+        }
+
+
 @kasir_bp.route("/dashboard")
 @login_required
 @karyawan_required
@@ -204,10 +261,16 @@ def dashboard():
     counts = {
         "queue": status_summary.get("Antrian", 0),
         "wash": status_summary.get("Diproses", 0),
-        "ready": status_summary.get("Selesai", 0),
+        "ready": status_summary.get("Siap Diambil", 0),
     }
 
-    transaksi_list = Transaksi.query.order_by(Transaksi.tanggal.desc()).limit(3).all()
+    transaksi_list = (
+        Transaksi.query
+        .filter(Transaksi.status_laundry != "Selesai")
+        .order_by(Transaksi.tanggal.desc())
+        .limit(3)
+        .all()
+    )
     transaksi_list = [alias_transaction(transaksi) for transaksi in transaksi_list]
     orders = []
     for transaksi in transaksi_list:
@@ -291,6 +354,10 @@ def transaksi():
                         return redirect(url_for("karyawan.transaksi"))
 
                     redeem_discount = Decimal(redeem_points // 20 * 10000)
+                    if redeem_discount > subtotal:
+                        max_points = int((subtotal // Decimal("10000")) * 20)
+                        flash(f"Point yang ditukar terlalu banyak. Maksimum {max_points} point untuk subtotal ini.", "warning")
+                        return redirect(url_for("karyawan.transaksi"))
 
             total_discount = promo_discount + redeem_discount
             final_total = max(Decimal("0"), subtotal - total_discount)
@@ -680,13 +747,16 @@ def status():
     status_filter = request.values.get("status", "").strip()
     orders = Transaksi.query.order_by(Transaksi.tanggal.desc())
 
+    if not status_filter:
+        orders = orders.filter(Transaksi.status_laundry != "Selesai")
+
     if search:
         q = f"%{search}%"
         orders = orders.join(Pelanggan, Transaksi.pelanggan_id == Pelanggan.id).filter(
             or_(Pelanggan.nama.ilike(q), Pelanggan.no_hp.ilike(q), Transaksi.id_transaksi.like(q))
         )
 
-    if status_filter in ["Menunggu", "Diproses", "Selesai", "Diambil"]:
+    if status_filter in ["Antrian", "Diproses", "Siap Diambil", "Selesai"]:
         orders = orders.filter(Transaksi.status_laundry == _model_status(status_filter))
     orders = orders.all()
     result = []
@@ -694,6 +764,7 @@ def status():
         pelanggan = Pelanggan.query.get(transaksi.pelanggan_id)
         result.append({
             "id": transaksi.id_transaksi,
+            "kode": getattr(transaksi, "kode_transaksi", transaksi.id_transaksi),
             "tanggal": transaksi.tanggal.strftime("%d/%m/%Y %H:%M"),
             "pelanggan": pelanggan.nama if pelanggan else "-",
             "whatsapp": pelanggan.no_hp if pelanggan else "-",
@@ -806,6 +877,26 @@ def pembayaran():
         end_date=end_date,
         format_currency=_format_currency,
     )
+
+
+@kasir_bp.route("/qris", methods=["GET"])
+@login_required
+@karyawan_required
+def qris():
+    transaksi_id = request.args.get("transaksi_id")
+    if not transaksi_id:
+        return jsonify(success=False, message="Transaksi tidak ditemukan."), 400
+
+    try:
+        transaksi = Transaksi.query.get_or_404(int(transaksi_id))
+        if transaksi.status_laundry != "Siap Diambil" or transaksi.status_pembayaran != "Belum Bayar":
+            return jsonify(success=False, message="Transaksi tidak tersedia untuk QRIS."), 400
+
+        qris_payload = _fetch_qris_payload(transaksi)
+        return jsonify(success=True, qris=qris_payload)
+    except Exception as e:
+        current_app.logger.exception("Gagal menyiapkan data QRIS.")
+        return jsonify(success=False, message=str(e)), 500
 
 
 @kasir_bp.route('/riwayat')

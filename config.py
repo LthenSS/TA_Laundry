@@ -74,3 +74,5 @@ class Config:
     WHATSAPP_API_URL = "https://api.fonnte.com/send"
     WHATSAPP_API_KEY = "RDMnrgiUFpWKxNqPwUgc"
     WHATSAPP_SENDER = "Smart Wash Laundry"
+    QRIS_API_URL = os.getenv("QRIS_API_URL", "")
+    QRIS_API_KEY = os.getenv("QRIS_API_KEY", "")

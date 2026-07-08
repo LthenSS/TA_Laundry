@@ -89,6 +89,11 @@
               <option value="QRIS">QRIS</option>
             </select>
           </div>
+          <div id="qrisDetails" class="alert alert-info d-none">
+            <div id="qrisNote" class="fw-semibold mb-2"></div>
+            <div id="qrisUrlContainer" class="mb-2"></div>
+            <pre id="qrisResponse" class="small text-wrap mb-0" style="white-space: pre-wrap;"></pre>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
@@ -98,6 +103,10 @@
     </div>
   </div>
 </div>
+
+<script>
+  var qrisEndpointUrl = "{{ url_for('karyawan.qris') }}";
+</script>
 
 <!-- Toast container -->
 <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1080;">

@@ -183,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('Pelanggan baru berhasil ditambahkan.');
     }
 
-    function validateRedeemPoints() {
+    function validateRedeemPoints(subtotal = 0) {
         if (!selectedCustomer?.is_member || !redeemPointCheckbox.checked) {
             redeemPointMessage.textContent = '';
             redeemPointPreview.textContent = '';
@@ -218,6 +218,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const discount = (redeemPoints / 20) * 10000;
+        if (subtotal > 0 && discount > subtotal) {
+            const maxPoints = Math.floor(subtotal / 10000) * 20;
+            redeemPointMessage.textContent = `Point terlalu banyak untuk subtotal ini. Maksimum ${maxPoints} point.`;
+            redeemPointPreview.textContent = '';
+            return { valid: false, points: 0, discount: 0 };
+        }
+
         redeemPointMessage.textContent = `Redeem ${redeemPoints} poin akan mengurangi total.`;
         redeemPointPreview.textContent = `Diskon redeem: ${formatRupiah(discount)}`;
         return { valid: true, points: redeemPoints, discount };
@@ -246,8 +253,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const data = await response.json();
-        const redeemValidation = validateRedeemPoints();
         const subtotal = Number(data.subtotal || 0);
+        const redeemValidation = validateRedeemPoints(subtotal);
         const promoDiscount = Number(data.discount || 0);
         const totalDiscount = promoDiscount + (redeemValidation.valid ? redeemValidation.discount : 0);
         const finalTotal = Math.max(0, subtotal - totalDiscount);

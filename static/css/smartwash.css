@@ -835,6 +835,10 @@ body {
     min-height: 100vh;
     background: #86d3e2;
     border-right: 1px solid #aab8bb;
+    position: sticky;
+    top: 0;
+    align-self: start;
+    overflow-y: auto;
 }
 
 .sw-kasir-logo {

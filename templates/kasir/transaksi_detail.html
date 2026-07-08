@@ -6,23 +6,83 @@
 {% block content %}
 <style>
 @media print {
+    body {
+        margin: 0;
+        padding: 0;
+        background: white;
+        color: #000;
+    }
+
     .sw-kasir-sidebar,
     .sw-kasir-topbar,
-    .no-print {
+    .no-print,
+    .btn,
+    .btn-primary,
+    .btn-secondary,
+    .btn-close,
+    .modal-backdrop,
+    .modal-footer {
         display: none !important;
     }
 
-    .sw-kasir-shell {
-        display: block;
-    }
-
-    .sw-kasir-content {
-        padding: 0;
+    .sw-kasir-shell,
+    .sw-kasir-content,
+    .sw-kasir-panel,
+    .sw-kasir-panel .p-4,
+    .table-responsive,
+    .row.g-4,
+    .row.g-4 > [class*='col-'] {
+        width: 100% !important;
+        max-width: 100% !important;
+        float: none !important;
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
 
     .sw-kasir-panel {
-        border: 0;
-        box-shadow: none;
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+    }
+
+    .sw-kasir-panel .p-4 {
+        padding: 0 !important;
+    }
+
+    .table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin-bottom: 0 !important;
+        font-size: 12px;
+    }
+
+    .table th,
+    .table td {
+        border: 1px solid #000 !important;
+        padding: 6px !important;
+        vertical-align: top !important;
+    }
+
+    .table thead th {
+        background: #f4f4f4 !important;
+    }
+
+    .text-center {
+        text-align: center !important;
+    }
+
+    .text-end {
+        text-align: right !important;
+    }
+
+    .fw-bold,
+    .badge {
+        font-weight: 600 !important;
+    }
+
+    .sw-kasir-panel-title {
+        display: none !important;
     }
 }
 </style>
@@ -59,7 +119,7 @@
         </div>
 
         <div class="table-responsive mb-4">
-            <table class="table table-bordered">
+            <table class="table table-bordered table-sm">
                 <thead class="table-light">
                     <tr>
                         <th>Service</th>
