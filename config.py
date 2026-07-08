@@ -29,14 +29,30 @@ class Config:
         if database_url:
             return database_url
 
+        if os.getenv("VERCEL") == "1":
+            db_path = os.getenv("DB_PATH", "/tmp/smartwash.db")
+            if db_path.startswith("/"):
+                return f"sqlite:////{db_path.lstrip('/')}"
+            return f"sqlite:///{db_path}"
+
         host = os.getenv("DB_HOST") or os.getenv("MYSQL_HOST") or "localhost"
         port = os.getenv("DB_PORT") or os.getenv("MYSQL_PORT") or "3306"
         username = os.getenv("DB_USERNAME") or os.getenv("MYSQL_USER") or "root"
         password = os.getenv("DB_PASSWORD") or os.getenv("MYSQL_PASSWORD") or ""
         database_name = os.getenv("DB_NAME") or os.getenv("MYSQL_DATABASE") or "smartwash"
         ssl_ca = os.getenv("DB_SSL_CA") or os.getenv("MYSQL_SSL_CA")
+        ssl_ca_content = os.getenv("DB_SSL_CA_CONTENT") or os.getenv("MYSQL_SSL_CA_CONTENT")
         ssl_verify_cert = os.getenv("DB_SSL_VERIFY_CERT") or os.getenv("MYSQL_SSL_VERIFY_CERT")
         ssl_verify_identity = os.getenv("DB_SSL_VERIFY_IDENTITY") or os.getenv("MYSQL_SSL_VERIFY_IDENTITY")
+
+        if ssl_ca_content and not ssl_ca:
+            ssl_ca_path = os.getenv("DB_SSL_CA_PATH", "/tmp/tidb-ca.pem")
+            try:
+                with open(ssl_ca_path, "w", encoding="utf-8") as ca_file:
+                    ca_file.write(ssl_ca_content)
+                ssl_ca = ssl_ca_path
+            except OSError:
+                pass
 
         encoded_password = quote_plus(password)
         uri = f"mysql+pymysql://{username}:{encoded_password}@{host}:{port}/{database_name}"

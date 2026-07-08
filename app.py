@@ -23,6 +23,9 @@ def ensure_database_exists(app):
         return
 
     parsed = urlsplit(database_uri)
+    if parsed.scheme.startswith("sqlite"):
+        return
+
     database_name = parsed.path.lstrip("/")
     if not database_name:
         return
