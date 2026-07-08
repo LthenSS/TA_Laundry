@@ -183,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('Pelanggan baru berhasil ditambahkan.');
     }
 
-    function validateRedeemPoints(subtotal = 0) {
+    function validateRedeemPoints(maxDiscount = 0) {
         if (!selectedCustomer?.is_member || !redeemPointCheckbox.checked) {
             redeemPointMessage.textContent = '';
             redeemPointPreview.textContent = '';
@@ -218,8 +218,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const discount = (redeemPoints / 20) * 10000;
-        if (subtotal > 0 && discount > subtotal) {
-            const maxPoints = Math.floor(subtotal / 10000) * 20;
+        if (maxDiscount > 0 && discount > maxDiscount) {
+            const maxPoints = Math.floor(maxDiscount / 10000) * 20;
             redeemPointMessage.textContent = `Point terlalu banyak untuk subtotal ini. Maksimum ${maxPoints} point.`;
             redeemPointPreview.textContent = '';
             return { valid: false, points: 0, discount: 0 };
@@ -254,8 +254,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const data = await response.json();
         const subtotal = Number(data.subtotal || 0);
-        const redeemValidation = validateRedeemPoints(subtotal);
         const promoDiscount = Number(data.discount || 0);
+        const maxRedeemDiscount = Math.max(0, subtotal - promoDiscount);
+        
+        const redeemValidation = validateRedeemPoints(maxRedeemDiscount);
         const totalDiscount = promoDiscount + (redeemValidation.valid ? redeemValidation.discount : 0);
         const finalTotal = Math.max(0, subtotal - totalDiscount);
 
@@ -287,10 +289,19 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast('Berat harus lebih dari 0 kg.');
             return;
         }
-        const redeemValidation = validateRedeemPoints();
-        if (redeemPointCheckbox.checked && !redeemValidation.valid) {
+        if (redeemPointCheckbox.checked && redeemPointMessage.textContent.includes('terlalu banyak')) {
             event.preventDefault();
-            showToast(redeemPointMessage.textContent || 'Redeem poin tidak valid.');
+            showToast(redeemPointMessage.textContent);
+            return;
+        }
+        if (redeemPointCheckbox.checked && redeemPointMessage.textContent.includes('kelipatan 20')) {
+            event.preventDefault();
+            showToast(redeemPointMessage.textContent);
+            return;
+        }
+        if (redeemPointCheckbox.checked && redeemPointMessage.textContent.includes('melebihi saldo')) {
+            event.preventDefault();
+            showToast(redeemPointMessage.textContent);
             return;
         }
         submitTransactionBtn.disabled = true;

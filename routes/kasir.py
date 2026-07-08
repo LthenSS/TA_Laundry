@@ -354,8 +354,8 @@ def transaksi():
                         return redirect(url_for("karyawan.transaksi"))
 
                     redeem_discount = Decimal(redeem_points // 20 * 10000)
-                    if redeem_discount > subtotal:
-                        max_points = int((subtotal // Decimal("10000")) * 20)
+                    if redeem_discount > (subtotal - promo_discount):
+                        max_points = int(((subtotal - promo_discount) // Decimal("10000")) * 20)
                         flash(f"Point yang ditukar terlalu banyak. Maksimum {max_points} point untuk subtotal ini.", "warning")
                         return redirect(url_for("karyawan.transaksi"))
 
