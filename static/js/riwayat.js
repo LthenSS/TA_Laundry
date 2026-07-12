@@ -84,13 +84,12 @@ document.addEventListener('DOMContentLoaded', function () {
     function printNota(data) {
         let layananRows = '';
         data.layanan.forEach(function (l) {
-            layananRows += `
-                <tr>
-                    <td>${l.nama}</td>
-                    <td>${l.berat} Kg</td>
-                    <td>Rp ${formatNumber(l.harga)}</td>
-                    <td style="text-align:right;">Rp ${formatNumber(l.sub_total)}</td>
-                </tr>`;
+            layananRows += `<tr>
+                <td style="padding:8px 10px;border:1px solid #dee2e6;">${l.nama}</td>
+                <td style="padding:8px 10px;border:1px solid #dee2e6;">${l.berat} Kg</td>
+                <td style="padding:8px 10px;border:1px solid #dee2e6;">Rp ${formatNumber(l.harga)}</td>
+                <td style="padding:8px 10px;border:1px solid #dee2e6;text-align:right;font-weight:600;">Rp ${formatNumber(l.sub_total)}</td>
+            </tr>`;
         });
 
         const notaHTML = `<!DOCTYPE html>
@@ -101,153 +100,188 @@ document.addEventListener('DOMContentLoaded', function () {
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 12px;
-            color: #000;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            color: #212529;
             background: #fff;
-            padding: 20px;
-            max-width: 320px;
+            padding: 32px 40px;
+            max-width: 720px;
             margin: 0 auto;
         }
-        .header {
+        .nota-header {
             text-align: center;
-            margin-bottom: 10px;
-            border-bottom: 2px dashed #000;
-            padding-bottom: 8px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #dee2e6;
         }
-        .header h2 {
-            font-size: 16px;
-            font-weight: bold;
+        .nota-header h2 {
+            font-size: 22px;
+            font-weight: 700;
             letter-spacing: 1px;
+            margin-bottom: 4px;
         }
-        .header p {
-            font-size: 11px;
-            margin-top: 2px;
+        .nota-header p {
+            font-size: 13px;
+            color: #6c757d;
         }
-        .section {
-            margin: 8px 0;
-            border-bottom: 1px dashed #000;
-            padding-bottom: 8px;
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0 24px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #dee2e6;
         }
-        .row-info {
-            display: flex;
-            justify-content: space-between;
-            margin: 3px 0;
+        .info-block { margin-bottom: 12px; }
+        .info-label {
+            font-size: 12px;
+            color: #6c757d;
+            margin-bottom: 2px;
         }
-        .row-info .label { color: #444; }
-        .row-info .value { font-weight: bold; text-align: right; }
+        .info-value {
+            font-size: 15px;
+            font-weight: 600;
+        }
+        .info-value.nota-kode { color: #0d6efd; }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 6px 0;
+            margin-bottom: 20px;
         }
-        thead tr th {
-            border-top: 1px solid #000;
-            border-bottom: 1px solid #000;
-            padding: 4px 2px;
+        thead th {
+            background: #f8f9fa;
+            padding: 10px 12px;
             text-align: left;
-            font-size: 11px;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1px solid #dee2e6;
         }
-        tbody tr td {
-            padding: 4px 2px;
-            font-size: 11px;
+        thead th:last-child { text-align: right; }
+        tbody td {
+            padding: 10px 12px;
+            font-size: 14px;
+            border: 1px solid #dee2e6;
             vertical-align: top;
         }
-        tbody tr:last-child td {
-            border-bottom: 1px solid #000;
+        tbody td:last-child { text-align: right; font-weight: 600; }
+        .summary {
+            display: flex;
+            justify-content: flex-end;
         }
-        .totals { margin-top: 8px; }
-        .total-row {
+        .summary-box {
+            width: 280px;
+        }
+        .summary-row {
             display: flex;
             justify-content: space-between;
-            margin: 3px 0;
-        }
-        .total-row.grand-total {
+            padding: 6px 0;
             font-size: 14px;
-            font-weight: bold;
-            border-top: 2px solid #000;
-            padding-top: 5px;
-            margin-top: 5px;
         }
-        .footer {
+        .summary-row.discount { color: #dc3545; }
+        .summary-row.grand-total {
+            border-top: 2px solid #dee2e6;
+            padding-top: 10px;
+            margin-top: 4px;
+            font-size: 17px;
+            font-weight: 700;
+        }
+        .nota-footer {
             text-align: center;
-            margin-top: 14px;
-            border-top: 2px dashed #000;
-            padding-top: 8px;
-            font-size: 11px;
+            margin-top: 32px;
+            padding-top: 16px;
+            border-top: 2px solid #dee2e6;
+            font-size: 13px;
+            color: #6c757d;
         }
         @media print {
-            body { padding: 0; }
-            @page { margin: 5mm; size: 80mm auto; }
+            body { padding: 12px 16px; }
+            @page { margin: 10mm; size: A4 portrait; }
         }
     </style>
 </head>
 <body>
-    <div class="header">
+    <div class="nota-header">
         <h2>SMART WASH LAUNDRY</h2>
-        <p>Nota Transaksi</p>
+        <p>Terima kasih sudah mempercayakan laundry Anda kepada kami.</p>
     </div>
 
-    <div class="section">
-        <div class="row-info"><span class="label">No. Nota</span><span class="value">${data.kode}</span></div>
-        <div class="row-info"><span class="label">Tanggal</span><span class="value">${data.tanggal}</span></div>
-        <div class="row-info"><span class="label">Status Laundry</span><span class="value">${data.status_laundry}</span></div>
-        <div class="row-info"><span class="label">Status Bayar</span><span class="value">${data.status_pembayaran}</span></div>
+    <div class="info-grid">
+        <div class="info-block">
+            <div class="info-label">Kode Transaksi</div>
+            <div class="info-value nota-kode">${data.kode}</div>
+        </div>
+        <div class="info-block">
+            <div class="info-label">Nama Pelanggan</div>
+            <div class="info-value">${data.pelanggan.nama}</div>
+        </div>
+        <div class="info-block">
+            <div class="info-label">Tanggal</div>
+            <div class="info-value">${data.tanggal}</div>
+        </div>
+        <div class="info-block">
+            <div class="info-label">No. HP</div>
+            <div class="info-value">${data.pelanggan.no_hp}</div>
+        </div>
+        <div class="info-block">
+            <div class="info-label">Status Laundry</div>
+            <div class="info-value">${data.status_laundry}</div>
+        </div>
+        <div class="info-block">
+            <div class="info-label">Status Bayar</div>
+            <div class="info-value">${data.status_pembayaran}</div>
+        </div>
+        <div class="info-block">
+            <div class="info-label">Alamat</div>
+            <div class="info-value" style="font-size:13px;font-weight:400;">${data.pelanggan.alamat}</div>
+        </div>
     </div>
 
-    <div class="section">
-        <div class="row-info"><span class="label">Pelanggan</span><span class="value">${data.pelanggan.nama}</span></div>
-        <div class="row-info"><span class="label">No. HP</span><span class="value">${data.pelanggan.no_hp}</span></div>
-        <div class="row-info"><span class="label">Alamat</span><span class="value" style="max-width:60%;word-break:break-word;">${data.pelanggan.alamat}</span></div>
-    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Layanan</th>
+                <th>Berat</th>
+                <th>Harga Satuan</th>
+                <th>Sub Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${layananRows}
+        </tbody>
+    </table>
 
-    <div class="section">
-        <table>
-            <thead>
-                <tr>
-                    <th>Layanan</th>
-                    <th>Berat</th>
-                    <th>Harga</th>
-                    <th style="text-align:right;">Subtotal</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${layananRows}
-            </tbody>
-        </table>
-
-        <div class="totals">
-            <div class="total-row">
+    <div class="summary">
+        <div class="summary-box">
+            <div class="summary-row">
                 <span>Subtotal</span>
                 <span>Rp ${formatNumber(data.subtotal)}</span>
             </div>
-            <div class="total-row">
+            <div class="summary-row discount">
                 <span>Diskon</span>
                 <span>- Rp ${formatNumber(data.discount)}</span>
             </div>
-            <div class="total-row grand-total">
-                <span>TOTAL</span>
+            <div class="summary-row grand-total">
+                <span>Grand Total</span>
                 <span>Rp ${formatNumber(data.total)}</span>
             </div>
         </div>
     </div>
 
-    <div class="footer">
-        <p>Terima kasih telah mempercayakan</p>
-        <p>laundry Anda kepada kami!</p>
-        <p style="margin-top:6px;">*** Smart Wash Laundry ***</p>
+    <div class="nota-footer">
+        <p>Terima kasih telah mempercayakan laundry Anda kepada kami!</p>
+        <p style="margin-top:4px;">— Smart Wash Laundry —</p>
     </div>
 
     <script>
         window.onload = function() {
             window.print();
-            setTimeout(function() { window.close(); }, 500);
+            setTimeout(function() { window.close(); }, 800);
         };
     <\/script>
 </body>
 </html>`;
 
-        const printWindow = window.open('', '_blank', 'width=400,height=600,scrollbars=yes');
+        const printWindow = window.open('', '_blank', 'width=800,height=700,scrollbars=yes');
         if (printWindow) {
             printWindow.document.write(notaHTML);
             printWindow.document.close();
@@ -260,3 +294,4 @@ document.addEventListener('DOMContentLoaded', function () {
         try { return Number(val).toLocaleString('id-ID', {maximumFractionDigits:0}); } catch(e) { return val; }
     }
 });
+
