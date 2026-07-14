@@ -521,11 +521,13 @@ def tambah_pelanggan_api():
     if Pelanggan.query.filter_by(no_hp=no_hp).first():
         return jsonify({"error": "Nomor HP sudah digunakan."}), 400
 
+    is_member = data.get("is_member", False)
+
     customer = Pelanggan(
         nama=nama,
         no_hp=no_hp,
         alamat=alamat,
-        is_member=False,
+        is_member=bool(is_member),
         total_point=0,
     )
     db.session.add(customer)
@@ -792,10 +794,12 @@ def status():
                 current_app.logger.exception("Unexpected error while sending WhatsApp notification: %s", exc)
                 response_body = str(exc)
 
-        if notification_sent:
-            flash("Notifikasi WhatsApp berhasil dikirim ke pelanggan.", "success")
+            if notification_sent:
+                flash("Notifikasi WhatsApp berhasil dikirim ke pelanggan.", "success")
+            else:
+                flash("Status laundry berhasil diperbarui, tetapi notifikasi WhatsApp gagal dikirim.", "warning")
         else:
-            flash("Status laundry berhasil diperbarui, tetapi notifikasi WhatsApp gagal dikirim.", "warning")
+            flash("Status laundry berhasil diperbarui.", "success")
         return redirect(url_for("karyawan.status"))
 
     search = request.values.get("q", "").strip()

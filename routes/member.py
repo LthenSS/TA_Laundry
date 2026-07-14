@@ -35,10 +35,14 @@ def tambah():
             flash("Nomor HP sudah terdaftar.", "warning")
             return render_template("member/form.html", pelanggan=None)
 
+        is_member = request.form.get("is_member") == "on"
+
         pelanggan = Pelanggan(
             nama=nama,
             no_hp=no_hp,
             alamat=alamat,
+            is_member=is_member,
+            total_point=0,
         )
         db.session.add(pelanggan)
         db.session.commit()

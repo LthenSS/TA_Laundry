@@ -158,6 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const name = document.getElementById('newCustomerName').value.trim();
         const phone = document.getElementById('newCustomerPhone').value.trim();
         const address = document.getElementById('newCustomerAddress').value.trim();
+        const isMember = document.getElementById('newCustomerIsMember').checked;
 
         if (!name || !phone || !address) {
             showToast('Nama, Nomor HP, dan Alamat wajib diisi.');
@@ -167,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const response = await fetch('/karyawan/api/pelanggan/tambah', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nama: name, no_hp: phone, alamat: address })
+            body: JSON.stringify({ nama: name, no_hp: phone, alamat: address, is_member: isMember })
         });
 
         const data = await response.json();

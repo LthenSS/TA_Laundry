@@ -89,7 +89,7 @@
                                 <td>
                                     <a href="{{ url_for('karyawan.member_detail', id=customer.id) }}" class="btn btn-sm btn-outline-primary">Detail</a>
                                     <a href="{{ url_for('karyawan.member_edit', id=customer.id) }}" class="btn btn-sm btn-outline-warning ms-1">Edit</a>
-                                    <form method="post" action="{{ url_for('karyawan.jadikan_member', id=customer.id) }}" class="d-inline" onsubmit="return confirm('Apakah Anda yakin ingin menjadikan pelanggan ini sebagai Member?')">
+                                    <form method="post" action="{{ url_for('karyawan.jadikan_member', id=customer.id) }}" class="d-inline swal-confirm-form" data-title="Jadikan Member?" data-text="Pelanggan {{ customer.nama }} akan dijadikan Member dan bisa mengumpulkan poin." data-icon="question">
                                         <button type="submit" class="btn btn-sm btn-success ms-1">Jadikan Member</button>
                                     </form>
                                 </td>
@@ -106,4 +106,31 @@
         </div>
     </div>
 </section>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.querySelectorAll('.swal-confirm-form').forEach(function(form) {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const title = this.dataset.title || 'Konfirmasi';
+        const text = this.dataset.text || 'Apakah Anda yakin?';
+        const icon = this.dataset.icon || 'warning';
+        const f = this;
+        Swal.fire({
+            title: title,
+            text: text,
+            icon: icon,
+            showCancelButton: true,
+            confirmButtonColor: '#22c55e',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Ya, Lanjutkan!',
+            cancelButtonText: 'Batal'
+        }).then(function(result) {
+            if (result.isConfirmed) f.submit();
+        });
+    });
+});
+</script>
 {% endblock %}

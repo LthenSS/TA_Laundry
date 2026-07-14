@@ -65,8 +65,8 @@
             <a href="{{ url_for('karyawan.member') }}" class="btn btn-secondary">Kembali</a>
             <a href="{{ url_for('karyawan.member_edit', id=customer.id) }}" class="btn btn-warning ms-2">Edit</a>
             {% if not customer.is_member %}
-            <form method="post" action="{{ url_for('karyawan.jadikan_member', id=customer.id) }}" class="d-inline">
-                <button type="submit" class="btn btn-success ms-2" onclick="return confirm('Apakah Anda yakin ingin menjadikan pelanggan ini sebagai Member?')">Jadikan Member</button>
+            <form method="post" action="{{ url_for('karyawan.jadikan_member', id=customer.id) }}" class="d-inline swal-confirm-form" data-title="Jadikan Member?" data-text="Pelanggan {{ customer.nama }} akan dijadikan Member dan bisa mengumpulkan poin." data-icon="question">
+                <button type="submit" class="btn btn-success ms-2">Jadikan Member</button>
             </form>
             {% endif %}
         </div>
@@ -134,4 +134,31 @@
         </table>
     </div>
 </section>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.querySelectorAll('.swal-confirm-form').forEach(function(form) {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const title = this.dataset.title || 'Konfirmasi';
+        const text = this.dataset.text || 'Apakah Anda yakin?';
+        const icon = this.dataset.icon || 'warning';
+        const f = this;
+        Swal.fire({
+            title: title,
+            text: text,
+            icon: icon,
+            showCancelButton: true,
+            confirmButtonColor: '#22c55e',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Ya, Jadikan Member!',
+            cancelButtonText: 'Batal'
+        }).then(function(result) {
+            if (result.isConfirmed) f.submit();
+        });
+    });
+});
+</script>
 {% endblock %}

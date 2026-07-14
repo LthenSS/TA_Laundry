@@ -45,22 +45,39 @@
         <main class="sw-main">
             <div class="sw-main-topline"></div>
             <div class="sw-content">
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
-
                 {% block content %}{% endblock %}
             </div>
         </main>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        {% if 'WhatsApp' in message or 'whatsapp' in message|lower %}
+                            Swal.fire({
+                                icon: '{{ "success" if category == "success" else "error" if category == "danger" else "info" }}',
+                                title: 'Notifikasi',
+                                text: '{{ message }}',
+                                confirmButtonText: 'OK'
+                            });
+                        {% else %}
+                            // Fallback to basic alert for other messages, inserted at the top of content
+                            const alertHtml = `
+                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            `;
+                            document.querySelector('.sw-content').insertAdjacentHTML('afterbegin', alertHtml);
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        });
+    </script>
+    {% block scripts %}{% endblock %}
 </body>
 </html>

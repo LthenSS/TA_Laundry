@@ -32,6 +32,18 @@
                 <textarea class="form-control" id="alamat" name="alamat" rows="4" placeholder="Masukan alamat lengkap" required>{{ pelanggan.alamat if pelanggan else '' }}</textarea>
             </div>
 
+            {% if not pelanggan %}
+            <div class="mb-4 p-3" style="background: #eaf9fb; border: 1px solid #84d5e5; border-radius: 8px;">
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="is_member" name="is_member">
+                    <label class="form-check-label fw-semibold" for="is_member">
+                        <i class="bi bi-star-fill text-warning me-1"></i> Sekalian jadikan Member?
+                    </label>
+                </div>
+                <small class="text-muted ms-4">Pelanggan akan langsung terdaftar sebagai Member dan bisa mengumpulkan poin.</small>
+            </div>
+            {% endif %}
+
             <div class="sw-form-actions">
                 <a href="{{ url_for('member.index') }}" class="sw-btn-muted px-5">Batal</a>
                 <button type="submit" class="{% if pelanggan %}sw-btn-orange{% else %}sw-btn-primary{% endif %} px-4"><i class="bi bi-save"></i> {% if pelanggan %}Simpan Perubahan{% else %}Simpan Pelanggan{% endif %}</button>
