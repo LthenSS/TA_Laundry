@@ -219,8 +219,15 @@
                         <input type="text" class="form-control" id="newCustomerName" required>
                     </div>
                     <div class="mb-3">
-                        <label for="newCustomerPhone" class="form-label">Nomor HP</label>
-                        <input type="tel" class="form-control" id="newCustomerPhone" required>
+                        <label for="newCustomerPhone" class="form-label">Nomor HP <span class="text-danger">*</span></label>
+                        <input type="tel" class="form-control" id="newCustomerPhone"
+                            inputmode="numeric"
+                            pattern="08[0-9]{8,13}"
+                            maxlength="15"
+                            placeholder="08xxxxxxxxxx"
+                            required>
+                        <div class="invalid-feedback" id="phoneError">Nomor HP harus diawali 08 dan minimal 10 digit angka.</div>
+                        <div class="form-text">Contoh: 081234567890</div>
                     </div>
                     <div class="mb-3">
                         <label for="newCustomerAddress" class="form-label">Alamat</label>
@@ -250,4 +257,54 @@
 </div>
 
 <script src="{{ url_for('static', filename='js/transaksi.js', v=3) }}"></script>
+
+<script>
+// Phone number validation for new customer modal
+const phoneInput = document.getElementById('newCustomerPhone');
+if (phoneInput) {
+    // Block non-numeric characters (allow only 0-9 and backspace/delete/arrow keys)
+    phoneInput.addEventListener('keypress', function(e) {
+        if (!/[0-9]/.test(e.key)) {
+            e.preventDefault();
+        }
+    });
+
+    // Also handle paste - strip non-numeric chars
+    phoneInput.addEventListener('paste', function(e) {
+        e.preventDefault();
+        const pasted = (e.clipboardData || window.clipboardData).getData('text');
+        const digits = pasted.replace(/\D/g, '');
+        this.value = digits;
+        validatePhone(this);
+    });
+
+    // Real-time validation feedback
+    phoneInput.addEventListener('input', function() {
+        // Strip any non-numeric characters that may have slipped through
+        this.value = this.value.replace(/\D/g, '');
+        validatePhone(this);
+    });
+
+    function validatePhone(input) {
+        const val = input.value;
+        const errorDiv = document.getElementById('phoneError');
+        if (val.length === 0) {
+            input.classList.remove('is-valid', 'is-invalid');
+            return;
+        }
+        if (!val.startsWith('08')) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            errorDiv.textContent = 'Nomor HP harus diawali dengan 08.';
+        } else if (val.length < 10) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            errorDiv.textContent = 'Nomor HP minimal 10 digit (saat ini: ' + val.length + ' digit).';
+        } else {
+            input.classList.add('is-valid');
+            input.classList.remove('is-invalid');
+        }
+    }
+}
+</script>
 {% endblock %}
