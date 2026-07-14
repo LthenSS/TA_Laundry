@@ -524,7 +524,7 @@ def generate_pdf_bytes(filter_type, dt_start, dt_end, search='', sort_by='tangga
                 _format_currency(row['total'])
             ])
         
-        tx_table = Table(tx_data, colWidths=[0.75*inch, 0.85*inch, 1.4*inch, 0.65*inch, 1.3*inch, 0.6*inch, 0.75*inch, 0.95*inch])
+        tx_table = Table(tx_data, colWidths=[1.1*inch, 0.75*inch, 1.3*inch, 0.65*inch, 1.25*inch, 0.65*inch, 0.65*inch, 0.9*inch])
         tx_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#17212b')),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),

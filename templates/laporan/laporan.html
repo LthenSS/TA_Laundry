@@ -16,7 +16,7 @@
     <div class="laporan-filters card mb-4">
         <div class="card-body">
             <div class="row g-3 align-items-end">
-                <div class="col-md-3">
+                <div class="col-12 col-xl-5 col-lg-6">
                     <label class="form-label">Periode</label>
                     <div class="btn-group w-100" role="group">
                         <input type="radio" class="btn-check" name="filter" id="filter-harian" value="harian" {% if filter_type == 'harian' %}checked{% endif %}>
@@ -33,31 +33,31 @@
                     </div>
                 </div>
 
-                <div class="col-md-3" id="custom-date-range" style="display: {% if filter_type == 'custom' %}block{% else %}none{% endif %};">
+                <div class="col-6 col-md-3 col-xl-2" id="custom-date-range" style="display: {% if filter_type == 'custom' %}block{% else %}none{% endif %};">
                     <label class="form-label">Tanggal Mulai</label>
                     <input type="date" class="form-control" id="start-date" name="start-date">
                 </div>
 
-                <div class="col-md-3" id="custom-date-range-end" style="display: {% if filter_type == 'custom' %}block{% else %}none{% endif %};">
+                <div class="col-6 col-md-3 col-xl-2" id="custom-date-range-end" style="display: {% if filter_type == 'custom' %}block{% else %}none{% endif %};">
                     <label class="form-label">Tanggal Akhir</label>
                     <input type="date" class="form-control" id="end-date" name="end-date">
                 </div>
 
-                <div class="col-md-3">
+                <div class="col-12 col-sm-6 col-xl-2 col-lg-3">
                     <button class="btn btn-primary w-100" id="apply-filter">
-                        <i class="bi bi-funnel"></i> Terapkan Filter
+                        <i class="bi bi-funnel"></i> Terapkan
                     </button>
                 </div>
 
-                <div class="col-md-3">
+                <div class="col-12 col-sm-6 col-xl-3 col-lg-3">
                     <input type="search" class="form-control" id="search-input" placeholder="Cari Kode/Nama...">
                 </div>
 
-                <div class="col-md-3 d-flex gap-2">
-                    <button class="btn btn-outline-secondary" id="print-btn" title="Print Report">
+                <div class="col-12 col-xl-2 col-lg-12 d-flex gap-2">
+                    <button class="btn btn-outline-secondary w-100" id="print-btn" title="Print Report">
                         <i class="bi bi-printer"></i> Cetak
                     </button>
-                    <button class="btn btn-outline-secondary" id="export-btn" title="Export PDF">
+                    <button class="btn btn-outline-secondary w-100" id="export-btn" title="Export PDF">
                         <i class="bi bi-file-pdf"></i> PDF
                     </button>
                 </div>
