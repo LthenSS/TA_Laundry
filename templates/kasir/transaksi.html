@@ -108,6 +108,57 @@
             </div>
         </div>
 
+        <!-- ADD-ON SECTION: muncul setelah layanan dipilih -->
+        <div id="addonSection" style="display:none;" class="mt-4">
+            <h2><i class="bi bi-stars"></i> Tambahan / Add-On
+                <span class="badge ms-2" style="background:#f59e0b; font-size:0.75rem; vertical-align:middle;">Opsional</span>
+            </h2>
+            <p class="text-muted small mb-3">Pilih tambahan layanan sesuai kebutuhan pelanggan.</p>
+
+            {% if layanan_addon %}
+            <div class="row g-3" id="addonList">
+                {% for addon in layanan_addon %}
+                <div class="col-md-6">
+                    <div class="card border addon-card h-100" style="transition: border-color 0.2s;">
+                        <div class="card-body d-flex align-items-center gap-3 p-3">
+                            <div class="form-check mb-0">
+                                <input class="form-check-input addon-checkbox" type="checkbox"
+                                    id="addon_{{ addon.id_layanan }}"
+                                    name="addon_ids[]"
+                                    value="{{ addon.id_layanan }}"
+                                    data-harga="{{ addon.harga_perkg }}"
+                                    data-satuan="{{ addon.satuan }}"
+                                    data-nama="{{ addon.nama_layanan }}">
+                            </div>
+                            <label class="form-check-label flex-grow-1" for="addon_{{ addon.id_layanan }}" style="cursor:pointer;">
+                                <div class="fw-bold">{{ addon.nama_layanan }}</div>
+                                <div class="text-muted small">
+                                    Rp {{ '{:,.0f}'.format(addon.harga_perkg|float).replace(',', '.') }}
+                                    / {{ 'Pcs' if addon.satuan == 'perpcs' else 'Kg' }}
+                                </div>
+                            </label>
+                            <div class="addon-qty-wrap" id="qty_wrap_{{ addon.id_layanan }}" style="display:none; min-width:90px;">
+                                <label class="small text-muted d-block mb-1">Qty</label>
+                                <input type="number" class="form-control form-control-sm addon-qty"
+                                    name="addon_qtys[]"
+                                    data-addon-id="{{ addon.id_layanan }}"
+                                    value="1" min="1" max="99" style="width:75px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-info py-2">Belum ada layanan Add-On. Tambahkan melalui menu <strong>Data Layanan</strong>.</div>
+            {% endif %}
+
+            <div class="mt-3 p-3 rounded" style="background:#f8f9fa; font-size:0.95rem;">
+                <span class="text-muted">Total Add-On:</span>
+                <strong class="ms-2 text-warning" id="addonTotal">Rp 0</strong>
+            </div>
+        </div>
+
         <h2 class="mt-5"><i class="bi bi-wallet2"></i> Pembayaran</h2>
 
         <div class="row g-3">
@@ -194,5 +245,5 @@
     </div>
 </div>
 
-<script src="{{ url_for('static', filename='js/transaksi.js') }}"></script>
+<script src="{{ url_for('static', filename='js/transaksi.js', v=3) }}"></script>
 {% endblock %}

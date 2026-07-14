@@ -60,11 +60,14 @@ document.addEventListener('DOMContentLoaded', function () {
             <h6>Detail Layanan</h6>
             <div class="table-responsive">
               <table class="table table-sm">
-                <thead><tr><th>Layanan</th><th>Berat</th><th>Harga</th><th>Sub Total</th></tr></thead>
+                <thead><tr><th>Layanan</th><th>Satuan</th><th>Harga</th><th>Sub Total</th></tr></thead>
                 <tbody>
         `;
         data.layanan.forEach(function (l) {
-            html += `<tr><td>${l.nama}</td><td>${l.berat} Kg</td><td>Rp ${formatNumber(l.harga)}</td><td>Rp ${formatNumber(l.sub_total)}</td></tr>`;
+            const isAddon = l.jenis === 'AddOn';
+            const badge = isAddon ? ' <span class="badge" style="background:#f59e0b; font-size:10px;">Add-On</span>' : '';
+            const unit = isAddon ? `${l.qty || 1} Pcs` : `${l.berat} Kg`;
+            html += `<tr><td>${l.nama}${badge}</td><td>${unit}</td><td>Rp ${formatNumber(l.harga)}</td><td>Rp ${formatNumber(l.sub_total)}</td></tr>`;
         });
         html += `</tbody></table></div>`;
         html += `<div class="d-flex justify-content-end"><div class="me-4">Subtotal: <strong>Rp ${formatNumber(data.subtotal)}</strong></div><div class="me-4">Diskon: <strong>Rp ${formatNumber(data.discount)}</strong></div><div>Total: <strong>Rp ${formatNumber(data.total)}</strong></div></div>`;
@@ -72,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function () {
         container.innerHTML = html;
 
         const modalEl = document.getElementById('detailModal');
-        const modal = new bootstrap.Modal(modalEl);
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
         modal.show();
 
         // print button - cetak hanya nota di popup window baru
@@ -84,9 +87,13 @@ document.addEventListener('DOMContentLoaded', function () {
     function printNota(data) {
         let layananRows = '';
         data.layanan.forEach(function (l) {
+            const isAddon = l.jenis === 'AddOn';
+            const badge = isAddon ? ' <span style="border: 1px solid #000; border-radius: 4px; padding: 1px 4px; font-size: 10px;">Add-On</span>' : '';
+            const unit = isAddon ? `${l.qty || 1} Pcs` : `${l.berat} Kg`;
+            
             layananRows += `<tr>
-                <td>${l.nama}</td>
-                <td>${l.berat} Kg</td>
+                <td>${l.nama}${badge}</td>
+                <td>${unit}</td>
                 <td>Rp ${formatNumber(l.harga)}</td>
                 <td class="text-end">Rp ${formatNumber(l.sub_total)}</td>
             </tr>`;
@@ -157,16 +164,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     <div class="receipt-totals">
         <div class="d-flex"><span>Subtotal</span><span>Rp ${formatNumber(data.subtotal)}</span></div>
-        ${data.discount > 0 ? \`<div class="d-flex"><span>Diskon</span><span>- Rp \${formatNumber(data.discount)}</span></div>\` : ''}
+        ${data.discount > 0 ? `<div class="d-flex"><span>Diskon</span><span>- Rp ${formatNumber(data.discount)}</span></div>` : ''}
         <div class="d-flex grand-total"><span>TOTAL BAYAR</span><span>Rp ${formatNumber(data.total)}</span></div>
         <div class="d-flex" style="margin-top: 5px;"><span>Metode</span><span>${data.metode_pembayaran || '-'}</span></div>
     </div>
 
-    ${data.qris_url ? \`
+    ${data.qris_url ? `
     <div class="qris-section">
         <div style="font-weight:bold; margin-bottom:10px;">Scan QRIS untuk Membayar</div>
-        <img src="\${data.qris_url}" style="max-width:180px; width:100%;">
-    </div>\` : ''}
+        <img src="${data.qris_url}" style="max-width:180px; width:100%;">
+    </div>` : ''}
 
     <div class="receipt-footer">
         <div style="font-weight:bold; margin-bottom:5px;">TERIMA KASIH</div>

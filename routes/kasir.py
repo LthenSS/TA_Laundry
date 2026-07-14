@@ -364,8 +364,32 @@ def transaksi():
                         flash(f"Point yang ditukar terlalu banyak. Maksimum {max_points} point untuk subtotal ini.", "warning")
                         return redirect(url_for("karyawan.transaksi"))
 
+            # --- Handle Add-Ons ---
+            addon_ids = request.form.getlist("addon_ids[]")
+            addon_qtys = request.form.getlist("addon_qtys[]")
+            addon_total = Decimal("0")
+            addon_details = []  # list of (layanan_obj, qty, harga, subtotal)
+            for i, aid in enumerate(addon_ids):
+                try:
+                    addon_layanan = Layanan.query.get(int(aid))
+                    if not addon_layanan or addon_layanan.jenis != "AddOn":
+                        continue
+                    qty = 1
+                    if i < len(addon_qtys):
+                        try:
+                            qty = max(1, int(addon_qtys[i]))
+                        except ValueError:
+                            qty = 1
+                    addon_harga = addon_layanan.harga_perkg
+                    addon_sub = addon_harga * qty
+                    addon_total += addon_sub
+                    addon_details.append((addon_layanan, qty, addon_harga, addon_sub))
+                except Exception:
+                    continue
+
+            total_subtotal = subtotal + addon_total
             total_discount = promo_discount + redeem_discount
-            final_total = max(Decimal("0"), subtotal - total_discount)
+            final_total = max(Decimal("0"), total_subtotal - total_discount)
 
             # generate kode_transaksi: TRX-YYYYMMDD-XXXX
             today = datetime.now().strftime('%Y%m%d')
@@ -385,7 +409,7 @@ def transaksi():
                 pelanggan_id=customer.id,
                 users_id_users=session.get("user_id"),
                 status_laundry="Antrian",
-                subtotal=subtotal,
+                subtotal=total_subtotal,
                 diskon=total_discount,
                 total=final_total,
                 status_pembayaran=status_pembayaran,
@@ -394,14 +418,28 @@ def transaksi():
             db.session.add(transaksi_baru)
             db.session.flush()
 
+            # Detail utama
             detail = DetailTransaksi(
                 transaksi_id_transaksi=transaksi_baru.id_transaksi,
                 layanan_id_layanan=layanan_item.id_layanan,
                 berat=berat_value,
+                qty=1,
                 harga=layanan_item.harga_perkg,
                 sub_total=subtotal,
             )
             db.session.add(detail)
+
+            # Detail add-on
+            for addon_layanan, qty, addon_harga, addon_sub in addon_details:
+                detail_addon = DetailTransaksi(
+                    transaksi_id_transaksi=transaksi_baru.id_transaksi,
+                    layanan_id_layanan=addon_layanan.id_layanan,
+                    berat=None,
+                    qty=qty,
+                    harga=addon_harga,
+                    sub_total=addon_sub,
+                )
+                db.session.add(detail_addon)
 
             pembayaran = Pembayaran(
                 transaksi_id_transaksi=transaksi_baru.id_transaksi,
@@ -423,10 +461,16 @@ def transaksi():
             flash(f"Transaksi gagal disimpan: {str(e)}", "danger")
             return redirect(url_for("karyawan.transaksi"))
 
-    layanan = Layanan.query.order_by(Layanan.id_layanan.asc()).all()
+    layanan_utama = Layanan.query.filter_by(jenis="Utama").order_by(Layanan.id_layanan.asc()).all()
+    layanan_addon = Layanan.query.filter_by(jenis="AddOn").order_by(Layanan.id_layanan.asc()).all()
     form_token = token_urlsafe(24)
     session["transaction_form_token"] = form_token
-    return render_template("kasir/transaksi.html", layanan=layanan, form_token=form_token)
+    return render_template(
+        "kasir/transaksi.html",
+        layanan=layanan_utama,
+        layanan_addon=layanan_addon,
+        form_token=form_token,
+    )
 
 
 @kasir_bp.route("/api/pelanggan")
@@ -981,6 +1025,9 @@ def riwayat_detail(id_transaksi):
         layanan_list.append({
             'nama': layanan_item.nama_layanan if layanan_item else '-',
             'berat': float(d.berat if d.berat is not None else 0),
+            'qty': d.qty if getattr(d, 'qty', None) is not None else 1,
+            'jenis': getattr(layanan_item, 'jenis', 'Utama') if layanan_item else 'Utama',
+            'satuan': getattr(layanan_item, 'satuan', 'perkg') if layanan_item else 'perkg',
             'harga': float(d.harga if d.harga is not None else 0),
             'sub_total': float(d.sub_total if d.sub_total is not None else 0),
         })

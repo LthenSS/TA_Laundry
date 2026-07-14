@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 
 {% block title %}{% if layanan %}Edit Layanan{% else %}Tambah Layanan{% endif %} - Smart Wash Laundry{% endblock %}
 
@@ -18,27 +18,104 @@
         <form class="sw-form" method="post">
             <div class="mb-4">
                 <label for="nama_layanan" class="form-label">Nama Layanan <span class="sw-required">*</span></label>
-                <input type="text" class="form-control" id="nama_layanan" name="nama_layanan" value="{{ layanan.nama_layanan if layanan else '' }}" placeholder="Masukan nama layanan Contoh : Cuci Seprei" required>
+                <input type="text" class="form-control" id="nama_layanan" name="nama_layanan"
+                    value="{{ layanan.nama_layanan if layanan else '' }}"
+                    placeholder="Contoh: Cuci + Setrika" required>
             </div>
 
+            <!-- Jenis Layanan -->
             <div class="mb-4">
-                <label for="harga_perkg" class="form-label">Tarif (per Kg/per pcs) <span class="sw-required">*</span></label>
-                <div class="input-group sw-input-group">
-                    <span class="input-group-text">Rp</span>
-                    <input type="number" class="form-control" id="harga_perkg" name="harga_perkg" value="{{ layanan.harga_perkg if layanan else '0' }}" min="0" step="0.01" required>
+                <label class="form-label">Jenis <span class="sw-required">*</span></label>
+                <div class="d-flex gap-4">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="jenis" id="jenis_utama" value="Utama"
+                            {% if not layanan or layanan.jenis == 'Utama' %}checked{% endif %}>
+                        <label class="form-check-label" for="jenis_utama">
+                            <strong>Layanan Utama</strong> <span class="text-muted">(Cuci, Setrika, dll)</span>
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="jenis" id="jenis_addon" value="AddOn"
+                            {% if layanan and layanan.jenis == 'AddOn' %}checked{% endif %}>
+                        <label class="form-check-label" for="jenis_addon">
+                            <strong>Add-On / Topping</strong> <span class="text-muted">(Pewangi Ekstra, Tot Bag, dll)</span>
+                        </label>
+                    </div>
                 </div>
             </div>
 
+            <!-- Satuan -->
+            <div class="mb-4" id="satuanSection">
+                <label class="form-label">Satuan Harga <span class="sw-required">*</span></label>
+                <div class="d-flex gap-4">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="satuan" id="satuan_kg" value="perkg"
+                            {% if not layanan or layanan.satuan == 'perkg' %}checked{% endif %}>
+                        <label class="form-check-label" for="satuan_kg">Per Kg</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="satuan" id="satuan_pcs" value="perpcs"
+                            {% if layanan and layanan.satuan == 'perpcs' %}checked{% endif %}>
+                        <label class="form-check-label" for="satuan_pcs">Per Pcs (satuan)</label>
+                    </div>
+                </div>
+                <small class="text-muted">Pilih "Per Pcs" untuk add-on yang dikenakan per item (mis: Tot Bag, Pewangi Ekstra).</small>
+            </div>
+
             <div class="mb-4">
+                <label for="harga_perkg" class="form-label">Tarif <span class="sw-required">*</span></label>
+                <div class="input-group sw-input-group">
+                    <span class="input-group-text">Rp</span>
+                    <input type="number" class="form-control" id="harga_perkg" name="harga_perkg"
+                        value="{{ layanan.harga_perkg if layanan else '0' }}" min="0" step="0.01" required>
+                    <span class="input-group-text" id="satuanLabel">/ Kg</span>
+                </div>
+            </div>
+
+            <div class="mb-4" id="estimasiSection">
                 <label for="estimasi_hari" class="form-label">Estimasi Hari <span class="sw-required">*</span></label>
-                <input type="number" class="form-control" id="estimasi_hari" name="estimasi_hari" value="{{ layanan.estimasi_hari if layanan else '1' }}" min="1" required>
+                <input type="number" class="form-control" id="estimasi_hari" name="estimasi_hari"
+                    value="{{ layanan.estimasi_hari if layanan else '1' }}" min="1">
+                <small class="text-muted">Tidak diperlukan untuk Add-On.</small>
             </div>
 
             <div class="sw-form-actions">
                 <a href="{{ url_for('layanan.index') }}" class="sw-btn-muted px-5">Batal</a>
-                <button type="submit" class="{% if layanan %}sw-btn-orange{% else %}sw-btn-primary{% endif %} px-4"><i class="bi bi-save"></i> {% if layanan %}Simpan Perubahan{% else %}Simpan Layanan{% endif %}</button>
+                <button type="submit" class="{% if layanan %}sw-btn-orange{% else %}sw-btn-primary{% endif %} px-4">
+                    <i class="bi bi-save"></i> {% if layanan %}Simpan Perubahan{% else %}Simpan Layanan{% endif %}
+                </button>
             </div>
         </form>
     </section>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const jenisRadios = document.querySelectorAll('input[name="jenis"]');
+    const satuanRadios = document.querySelectorAll('input[name="satuan"]');
+    const estimasiSection = document.getElementById('estimasiSection');
+    const satuanLabel = document.getElementById('satuanLabel');
+
+    function updateForm() {
+        const jenisVal = document.querySelector('input[name="jenis"]:checked')?.value;
+        const satuanVal = document.querySelector('input[name="satuan"]:checked')?.value;
+
+        // Sembunyikan estimasi untuk AddOn
+        if (jenisVal === 'AddOn') {
+            estimasiSection.style.opacity = '0.4';
+            estimasiSection.style.pointerEvents = 'none';
+        } else {
+            estimasiSection.style.opacity = '1';
+            estimasiSection.style.pointerEvents = '';
+        }
+
+        // Update label satuan
+        satuanLabel.textContent = satuanVal === 'perpcs' ? '/ Pcs' : '/ Kg';
+    }
+
+    jenisRadios.forEach(r => r.addEventListener('change', updateForm));
+    satuanRadios.forEach(r => r.addEventListener('change', updateForm));
+    updateForm();
+});
+</script>
 {% endblock %}

@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 
 {% block title %}Layanan - Smart Wash Laundry{% endblock %}
 
@@ -25,9 +25,9 @@
                 <tr>
                     <th>NO</th>
                     <th>NAMA LAYANAN</th>
-                    <th>TARIF (PER KG)</th>
-                    <th>STATUS</th>
-                    <th>KATEGORI</th>
+                    <th>JENIS</th>
+                    <th>TARIF</th>
+                    <th>SATUAN</th>
                     <th>AKSI</th>
                 </tr>
             </thead>
@@ -36,9 +36,15 @@
                 <tr>
                     <td>{{ loop.index }}</td>
                     <td class="fw-bold">{{ layanan.nama_layanan }}</td>
-                    <td class="text-primary">{{ layanan.harga_rupiah() }}</td>
-                    <td><span class="sw-status sw-status-active">Aktif</span></td>
-                    <td class="text-primary">Layanan</td>
+                    <td>
+                        {% if layanan.jenis == 'AddOn' %}
+                        <span class="badge" style="background:#f59e0b; color:#fff;">Add-On</span>
+                        {% else %}
+                        <span class="badge" style="background:#3b82f6; color:#fff;">Utama</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-primary fw-bold">{{ layanan.harga_rupiah() }}</td>
+                    <td class="text-muted">{{ 'per Pcs' if layanan.satuan == 'perpcs' else 'per Kg' }}</td>
                     <td>
                         <a href="{{ url_for('layanan.edit', id_layanan=layanan.id_layanan) }}" class="sw-icon-btn sw-icon-edit" title="Edit"><i class="bi bi-pencil-fill"></i></a>
                         <form method="post" action="{{ url_for('layanan.hapus', id_layanan=layanan.id_layanan) }}" class="d-inline" onsubmit="return confirm('Hapus layanan ini?')">

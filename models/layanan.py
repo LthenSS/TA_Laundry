@@ -8,6 +8,18 @@ class Layanan(db.Model):
     nama_layanan = db.Column(db.String(100), nullable=False)
     harga_perkg = db.Column(db.Numeric(10, 2), nullable=False)
     estimasi_hari = db.Column(db.Integer, nullable=False)
+    jenis = db.Column(
+        db.Enum("Utama", "AddOn"),
+        nullable=False,
+        default="Utama",
+        server_default="Utama",
+    )
+    satuan = db.Column(
+        db.Enum("perkg", "perpcs"),
+        nullable=False,
+        default="perkg",
+        server_default="perkg",
+    )
     detail_transaksi = db.relationship(
         "DetailTransaksi",
         back_populates="layanan",

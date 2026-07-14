@@ -185,9 +185,19 @@
                 <tbody>
                     {% for detail in details %}
                     <tr>
-                        <td>{{ detail.layanan.nama_layanan if detail.layanan else '-' }}</td>
+                        <td>
+                            {{ detail.layanan.nama_layanan if detail.layanan else '-' }}
+                            {% if detail.layanan and detail.layanan.jenis == 'AddOn' %}
+                            <span class="badge ms-1" style="background:#f59e0b; font-size:0.7rem;">Add-On</span>
+                            {% endif %}
+                        </td>
+                        {% if detail.layanan and detail.layanan.jenis == 'AddOn' %}
+                        <td>{{ detail.qty or 1 }} Pcs</td>
+                        <td>{{ format_currency(detail.harga_satuan) }}</td>
+                        {% else %}
                         <td>{{ detail.berat }} Kg</td>
                         <td>{{ format_currency(detail.harga_satuan) }}</td>
+                        {% endif %}
                         <td class="text-end fw-bold">{{ format_currency(detail.subtotal) }}</td>
                     </tr>
                     {% else %}
@@ -226,10 +236,12 @@
                     <span>Metode</span>
                     <span>{{ pembayaran.metode_pembayaran if pembayaran else '-' }}</span>
                 </div>
+                {% if transaksi.pelanggan and transaksi.pelanggan.is_member and point_earned > 0 %}
                 <div class="d-flex justify-content-between text-muted">
                     <span>Poin Didapat</span>
                     <span>+{{ point_earned }} Poin</span>
                 </div>
+                {% endif %}
             </div>
 
             <!-- QRIS Section -->

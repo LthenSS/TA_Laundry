@@ -255,13 +255,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await response.json();
         const subtotal = Number(data.subtotal || 0);
         const promoDiscount = Number(data.discount || 0);
+        const addonTotal = calculateAddonTotal();
         const maxRedeemDiscount = Math.max(0, subtotal - promoDiscount);
         
         const redeemValidation = validateRedeemPoints(maxRedeemDiscount);
         const totalDiscount = promoDiscount + (redeemValidation.valid ? redeemValidation.discount : 0);
-        const finalTotal = Math.max(0, subtotal - totalDiscount);
+        const totalSubtotal = subtotal + addonTotal;
+        const finalTotal = Math.max(0, totalSubtotal - totalDiscount);
 
-        subtotalText.textContent = formatRupiah(subtotal);
+        subtotalText.textContent = formatRupiah(totalSubtotal);
         discountText.textContent = `- ${formatRupiah(totalDiscount)}`;
         totalText.textContent = formatRupiah(finalTotal);
         promoName.textContent = data.promo ? `${data.promo.nama} (${data.promo.nilai})` : 'Tidak ada promo';
@@ -281,6 +283,52 @@ document.addEventListener('DOMContentLoaded', () => {
             if (qrisContainer) qrisContainer.style.display = 'none';
         }
     }
+
+    // ---- ADD-ON LOGIC ----
+    function calculateAddonTotal() {
+        let total = 0;
+        document.querySelectorAll('.addon-checkbox:checked').forEach(cb => {
+            const harga = parseFloat(cb.dataset.harga || 0);
+            const addonId = cb.value;
+            const qtyInput = document.querySelector(`.addon-qty[data-addon-id='${addonId}']`);
+            const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1;
+            total += harga * qty;
+        });
+        const addonTotalEl = document.getElementById('addonTotal');
+        if (addonTotalEl) addonTotalEl.textContent = formatRupiah(total);
+        return total;
+    }
+
+    const addonSection = document.getElementById('addonSection');
+    layananSelect.addEventListener('change', function() {
+        if (addonSection) {
+            addonSection.style.display = this.value ? 'block' : 'none';
+        }
+    });
+
+    document.querySelectorAll('.addon-checkbox').forEach(cb => {
+        cb.addEventListener('change', function() {
+            const wrap = document.getElementById(`qty_wrap_${this.value}`);
+            const card = this.closest('.addon-card');
+            if (this.checked) {
+                if (wrap) wrap.style.display = 'block';
+                if (card) card.style.borderColor = '#f59e0b';
+            } else {
+                if (wrap) wrap.style.display = 'none';
+                if (card) card.style.borderColor = '';
+            }
+            calculateAddonTotal();
+            calculateTotals();
+        });
+    });
+
+    document.querySelectorAll('.addon-qty').forEach(inp => {
+        inp.addEventListener('input', function() {
+            if (parseInt(this.value) < 1 || !this.value) this.value = 1;
+            calculateAddonTotal();
+            calculateTotals();
+        });
+    });
 
     async function generateQrisCode(amount) {
         const qrisContainer = document.getElementById('qrisContainer');
@@ -354,7 +402,7 @@ document.addEventListener('DOMContentLoaded', () => {
         searchCustomers(query);
     }));
     beratInput.addEventListener('input', calculateTotals);
-    layananSelect.addEventListener('change', calculateTotals);
+    layananSelect.addEventListener('change', calculateTotals); // also triggers addon visibility above
     redeemPointCheckbox.addEventListener('change', () => {
         setRedeemPointInputState();
         if (redeemPointCheckbox.checked) {
