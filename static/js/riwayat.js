@@ -85,10 +85,10 @@ document.addEventListener('DOMContentLoaded', function () {
         let layananRows = '';
         data.layanan.forEach(function (l) {
             layananRows += `<tr>
-                <td style="padding:8px 10px;border:1px solid #dee2e6;">${l.nama}</td>
-                <td style="padding:8px 10px;border:1px solid #dee2e6;">${l.berat} Kg</td>
-                <td style="padding:8px 10px;border:1px solid #dee2e6;">Rp ${formatNumber(l.harga)}</td>
-                <td style="padding:8px 10px;border:1px solid #dee2e6;text-align:right;font-weight:600;">Rp ${formatNumber(l.sub_total)}</td>
+                <td>${l.nama}</td>
+                <td>${l.berat} Kg</td>
+                <td>Rp ${formatNumber(l.harga)}</td>
+                <td class="text-end">Rp ${formatNumber(l.sub_total)}</td>
             </tr>`;
         });
 
@@ -100,149 +100,54 @@ document.addEventListener('DOMContentLoaded', function () {
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            color: #212529;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+            color: #000;
             background: #fff;
-            padding: 32px 40px;
-            max-width: 720px;
+            padding: 20px;
+            max-width: 400px;
             margin: 0 auto;
         }
-        .nota-header {
-            text-align: center;
-            margin-bottom: 24px;
-            padding-bottom: 16px;
-            border-bottom: 2px solid #dee2e6;
-        }
-        .nota-header h2 {
-            font-size: 22px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            margin-bottom: 4px;
-        }
-        .nota-header p {
-            font-size: 13px;
-            color: #6c757d;
-        }
-        .info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0 24px;
-            margin-bottom: 24px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid #dee2e6;
-        }
-        .info-block { margin-bottom: 12px; }
-        .info-label {
-            font-size: 12px;
-            color: #6c757d;
-            margin-bottom: 2px;
-        }
-        .info-value {
-            font-size: 15px;
-            font-weight: 600;
-        }
-        .info-value.nota-kode { color: #0d6efd; }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        thead th {
-            background: #f8f9fa;
-            padding: 10px 12px;
-            text-align: left;
-            font-size: 13px;
-            font-weight: 600;
-            border: 1px solid #dee2e6;
-        }
-        thead th:last-child { text-align: right; }
-        tbody td {
-            padding: 10px 12px;
-            font-size: 14px;
-            border: 1px solid #dee2e6;
-            vertical-align: top;
-        }
-        tbody td:last-child { text-align: right; font-weight: 600; }
-        .summary {
-            display: flex;
-            justify-content: flex-end;
-        }
-        .summary-box {
-            width: 280px;
-        }
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 6px 0;
-            font-size: 14px;
-        }
-        .summary-row.discount { color: #dc3545; }
-        .summary-row.grand-total {
-            border-top: 2px solid #dee2e6;
-            padding-top: 10px;
-            margin-top: 4px;
-            font-size: 17px;
-            font-weight: 700;
-        }
-        .nota-footer {
-            text-align: center;
-            margin-top: 32px;
-            padding-top: 16px;
-            border-top: 2px solid #dee2e6;
-            font-size: 13px;
-            color: #6c757d;
-        }
-        @media print {
-            body { padding: 12px 16px; }
-            @page { margin: 10mm; size: A4 portrait; }
-        }
+        .receipt-header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 15px; margin-bottom: 15px; }
+        .receipt-header h3 { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
+        .receipt-header p { font-size: 12px; line-height: 1.4; margin: 0; }
+        .receipt-info { margin-bottom: 15px; font-size: 13px; }
+        .receipt-info .row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .receipt-table { width: 100%; margin-bottom: 15px; border-collapse: collapse; }
+        .receipt-table th { border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 6px 0; text-align: left; }
+        .receipt-table td { padding: 6px 0; vertical-align: top; }
+        .receipt-table .text-end { text-align: right; }
+        .receipt-totals { border-top: 2px dashed #000; padding-top: 10px; }
+        .receipt-totals .d-flex { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .receipt-totals .grand-total { font-size: 15px; font-weight: bold; border-top: 1px dashed #000; padding-top: 10px; margin-top: 5px; }
+        .qris-section { text-align: center; margin-top: 15px; border-top: 2px dashed #000; padding-top: 15px; }
+        .receipt-footer { text-align: center; margin-top: 20px; border-top: 1px dashed #000; padding-top: 15px; font-size: 12px; }
+        @media print { body { max-width: 100%; padding: 0; } }
     </style>
 </head>
 <body>
-    <div class="nota-header">
-        <h2>SMART WASH LAUNDRY</h2>
-        <p>Terima kasih sudah mempercayakan laundry Anda kepada kami.</p>
+    <div class="receipt-header">
+        <h3>SMART WASH LAUNDRY</h3>
+        <p>Jl. Tegalrejo Raya Blk. E No. 51A - 51,<br>Tegalrejo, Kec. Argomulyo, Kota Salatiga</p>
     </div>
 
-    <div class="info-grid">
-        <div class="info-block">
-            <div class="info-label">Kode Transaksi</div>
-            <div class="info-value nota-kode">${data.kode}</div>
-        </div>
-        <div class="info-block">
-            <div class="info-label">Nama Pelanggan</div>
-            <div class="info-value">${data.pelanggan.nama}</div>
-        </div>
-        <div class="info-block">
-            <div class="info-label">Tanggal</div>
-            <div class="info-value">${data.tanggal}</div>
-        </div>
-        <div class="info-block">
-            <div class="info-label">No. HP</div>
-            <div class="info-value">${data.pelanggan.no_hp}</div>
-        </div>
-        <div class="info-block">
-            <div class="info-label">Status Laundry</div>
-            <div class="info-value">${data.status_laundry}</div>
-        </div>
-        <div class="info-block">
-            <div class="info-label">Status Bayar</div>
-            <div class="info-value">${data.status_pembayaran}</div>
-        </div>
-        <div class="info-block">
-            <div class="info-label">Alamat</div>
-            <div class="info-value" style="font-size:13px;font-weight:400;">${data.pelanggan.alamat}</div>
+    <div class="receipt-info">
+        <div class="row"><span>No. Nota</span><strong>${data.kode}</strong></div>
+        <div class="row"><span>Pelanggan</span><strong>${data.pelanggan.nama}</strong></div>
+        <div class="row"><span>Status Cucian</span><span>${data.status_laundry}</span></div>
+        <div class="row">
+            <span>Pembayaran</span>
+            <strong>${data.status_pembayaran.toUpperCase()}</strong>
         </div>
     </div>
 
-    <table>
+    <table class="receipt-table">
         <thead>
             <tr>
                 <th>Layanan</th>
-                <th>Berat</th>
-                <th>Harga Satuan</th>
-                <th>Sub Total</th>
+                <th>Qty</th>
+                <th>Harga</th>
+                <th class="text-end">Subtotal</th>
             </tr>
         </thead>
         <tbody>
@@ -250,34 +155,32 @@ document.addEventListener('DOMContentLoaded', function () {
         </tbody>
     </table>
 
-    <div class="summary">
-        <div class="summary-box">
-            <div class="summary-row">
-                <span>Subtotal</span>
-                <span>Rp ${formatNumber(data.subtotal)}</span>
-            </div>
-            <div class="summary-row discount">
-                <span>Diskon</span>
-                <span>- Rp ${formatNumber(data.discount)}</span>
-            </div>
-            <div class="summary-row grand-total">
-                <span>Grand Total</span>
-                <span>Rp ${formatNumber(data.total)}</span>
-            </div>
-        </div>
+    <div class="receipt-totals">
+        <div class="d-flex"><span>Subtotal</span><span>Rp ${formatNumber(data.subtotal)}</span></div>
+        ${data.discount > 0 ? \`<div class="d-flex"><span>Diskon</span><span>- Rp \${formatNumber(data.discount)}</span></div>\` : ''}
+        <div class="d-flex grand-total"><span>TOTAL BAYAR</span><span>Rp ${formatNumber(data.total)}</span></div>
+        <div class="d-flex" style="margin-top: 5px;"><span>Metode</span><span>${data.metode_pembayaran || '-'}</span></div>
     </div>
 
-    <div class="nota-footer">
-        <p>Terima kasih telah mempercayakan laundry Anda kepada kami!</p>
-        <p style="margin-top:4px;">— Smart Wash Laundry —</p>
+    ${data.qris_url ? \`
+    <div class="qris-section">
+        <div style="font-weight:bold; margin-bottom:10px;">Scan QRIS untuk Membayar</div>
+        <img src="\${data.qris_url}" style="max-width:180px; width:100%;">
+    </div>\` : ''}
+
+    <div class="receipt-footer">
+        <div style="font-weight:bold; margin-bottom:5px;">TERIMA KASIH</div>
+        <div>Silakan simpan nota ini sebagai bukti transaksi.</div>
     </div>
 
     <script>
         window.onload = function() {
-            window.print();
-            setTimeout(function() { window.close(); }, 800);
+            setTimeout(function() {
+                window.print();
+                setTimeout(function() { window.close(); }, 800);
+            }, 500);
         };
-    <\/script>
+    </script>
 </body>
 </html>`;
 

@@ -990,6 +990,14 @@ def riwayat_detail(id_transaksi):
     subtotal = float(transaksi.subtotal or 0)
     total = float(transaksi.total or 0)
     discount = subtotal - total if subtotal and total else 0
+    qris_url = None
+    if pembayaran and pembayaran.metode == 'QRIS' and transaksi.status_pembayaran == 'Belum Bayar':
+        try:
+            from routes.kasir import _fetch_qris_payload
+            qris_payload = _fetch_qris_payload(transaksi)
+            qris_url = qris_payload.get('qris_url') if isinstance(qris_payload, dict) else None
+        except Exception:
+            pass
 
     return jsonify({
         'id': transaksi.id_transaksi,
@@ -1008,4 +1016,5 @@ def riwayat_detail(id_transaksi):
         'status_laundry': transaksi.status_laundry,
         'status_pembayaran': transaksi.status_pembayaran,
         'metode_pembayaran': pembayaran.metode if pembayaran else None,
+        'qris_url': qris_url,
     })

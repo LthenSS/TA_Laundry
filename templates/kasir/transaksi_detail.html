@@ -5,126 +5,180 @@
 
 {% block content %}
 <style>
+/* Base Receipt Style */
+.receipt-wrapper {
+    max-width: 450px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-family: 'Courier New', Courier, monospace;
+    color: #333;
+}
+
+.receipt-header {
+    text-align: center;
+    border-bottom: 2px dashed #ccc;
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+}
+
+.receipt-header h3 {
+    font-weight: 800;
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    color: #000;
+}
+
+.receipt-header p {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin: 0;
+    color: #555;
+}
+
+.receipt-info {
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+}
+
+.receipt-info .row {
+    margin-bottom: 5px;
+}
+
+.receipt-table {
+    width: 100%;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+}
+
+.receipt-table th {
+    border-top: 1px dashed #ccc;
+    border-bottom: 1px dashed #ccc;
+    padding: 8px 0;
+    text-align: left;
+}
+
+.receipt-table td {
+    padding: 6px 0;
+    vertical-align: top;
+}
+
+.receipt-table .text-end {
+    text-align: right;
+}
+
+.receipt-totals {
+    border-top: 2px dashed #ccc;
+    padding-top: 15px;
+    font-size: 0.9rem;
+}
+
+.receipt-totals .d-flex {
+    margin-bottom: 5px;
+}
+
+.receipt-totals .grand-total {
+    font-size: 1.1rem;
+    font-weight: bold;
+    border-top: 1px dashed #ccc;
+    padding-top: 10px;
+    margin-top: 5px;
+}
+
+.receipt-footer {
+    text-align: center;
+    margin-top: 20px;
+    border-top: 1px dashed #ccc;
+    padding-top: 15px;
+    font-size: 0.9rem;
+}
+
 @media print {
     body {
         margin: 0;
         padding: 0;
         background: white;
-        color: #000;
     }
 
     .sw-kasir-sidebar,
     .sw-kasir-topbar,
     .no-print,
-    .btn,
-    .btn-primary,
-    .btn-secondary,
-    .btn-close,
-    .modal-backdrop,
-    .modal-footer {
+    .sw-kasir-panel-title {
         display: none !important;
     }
 
     .sw-kasir-shell,
     .sw-kasir-content,
-    .sw-kasir-panel,
-    .sw-kasir-panel .p-4,
-    .table-responsive,
-    .row.g-4,
-    .row.g-4 > [class*='col-'] {
+    .sw-kasir-panel {
         width: 100% !important;
-        max-width: 100% !important;
-        float: none !important;
-        display: block !important;
         margin: 0 !important;
         padding: 0 !important;
-    }
-
-    .sw-kasir-panel {
         border: none !important;
         box-shadow: none !important;
         background: transparent !important;
     }
 
-    .sw-kasir-panel .p-4 {
-        padding: 0 !important;
-    }
-
-    .table {
-        width: 100% !important;
-        border-collapse: collapse !important;
-        margin-bottom: 0 !important;
-        font-size: 12px;
-    }
-
-    .table th,
-    .table td {
-        border: 1px solid #000 !important;
-        padding: 6px !important;
-        vertical-align: top !important;
-    }
-
-    .table thead th {
-        background: #f4f4f4 !important;
-    }
-
-    .text-center {
-        text-align: center !important;
-    }
-
-    .text-end {
-        text-align: right !important;
-    }
-
-    .fw-bold,
-    .badge {
-        font-weight: 600 !important;
-    }
-
-    .sw-kasir-panel-title {
-        display: none !important;
+    .receipt-wrapper {
+        max-width: 100% !important;
+        margin: 0;
+        padding: 0;
+        border: none;
+        border-radius: 0;
+        color: #000;
     }
 }
 </style>
 
 <section class="sw-kasir-panel mb-4">
-    <header class="sw-kasir-panel-title"><i class="bi bi-receipt"></i> Receipt</header>
+    <header class="sw-kasir-panel-title no-print"><i class="bi bi-receipt"></i> Nota Transaksi</header>
     <div class="p-4">
-        <div class="text-center mb-4">
-            <h3 class="fw-bold mb-1">SMART WASH LAUNDRY</h3>
-            <div class="text-muted">Terima kasih sudah mempercayakan laundry Anda kepada kami.</div>
-        </div>
+        
+        <div class="receipt-wrapper">
+            <!-- Header -->
+            <div class="receipt-header">
+                <h3>SMART WASH LAUNDRY</h3>
+                <p>
+                    Jl. Tegalrejo Raya Blk. E No. 51A - 51,<br>
+                    Tegalrejo, Kec. Argomulyo, Kota Salatiga
+                </p>
+            </div>
 
-        <div class="row g-4 mb-4">
-            <div class="col-md-6">
-                <label class="form-label text-muted">Transaction Code</label>
-                <div class="fs-5 fw-bold text-primary">{{ transaksi.format_id() }}</div>
+            <!-- Transaction Info -->
+            <div class="receipt-info">
+                <div class="row">
+                    <div class="col-5 text-muted">No. Nota</div>
+                    <div class="col-7 fw-bold">{{ transaksi.format_id() }}</div>
+                </div>
+                <div class="row">
+                    <div class="col-5 text-muted">Pelanggan</div>
+                    <div class="col-7 fw-bold">{{ transaksi.pelanggan.nama if transaksi.pelanggan else '-' }}</div>
+                </div>
+                <div class="row">
+                    <div class="col-5 text-muted">Status Cucian</div>
+                    <div class="col-7">{{ display_status(transaksi.status_laundry) }}</div>
+                </div>
+                <div class="row">
+                    <div class="col-5 text-muted">Pembayaran</div>
+                    <div class="col-7">
+                        {% if transaksi.status_pembayaran == 'Lunas' %}
+                            <span class="fw-bold text-success">LUNAS</span>
+                        {% else %}
+                            <span class="fw-bold text-danger">BELUM BAYAR</span>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
-            <div class="col-md-6">
-                <label class="form-label text-muted">Customer Name</label>
-                <div class="fs-5 fw-bold">{{ transaksi.pelanggan.nama if transaksi.pelanggan else '-' }}</div>
-            </div>
-            <div class="col-md-6">
-                <label class="form-label text-muted">Laundry Status</label>
-                <div><span class="badge bg-secondary fs-6">{{ display_status(transaksi.status_laundry) }}</span></div>
-            </div>
-            <div class="col-md-6">
-                <label class="form-label text-muted">Payment Status</label>
-                {% if transaksi.status_pembayaran == 'Lunas' %}
-                    <div><span class="badge bg-success fs-6">Bayar di Awal</span></div>
-                {% else %}
-                    <div><span class="badge bg-warning text-dark fs-6">Bayar Saat Pengambilan</span></div>
-                {% endif %}
-            </div>
-        </div>
 
-        <div class="table-responsive mb-4">
-            <table class="table table-bordered table-sm">
-                <thead class="table-light">
+            <!-- Items Table -->
+            <table class="receipt-table">
+                <thead>
                     <tr>
-                        <th>Service</th>
-                        <th>Weight</th>
-                        <th>Price</th>
+                        <th>Layanan</th>
+                        <th>Qty</th>
+                        <th>Harga</th>
                         <th class="text-end">Subtotal</th>
                     </tr>
                 </thead>
@@ -143,52 +197,60 @@
                     {% endfor %}
                 </tbody>
             </table>
-        </div>
 
-        <div class="row justify-content-end">
-            <div class="col-md-5">
-                <div class="d-flex justify-content-between mb-2">
+            <!-- Totals -->
+            <div class="receipt-totals">
+                <div class="d-flex justify-content-between">
                     <span>Subtotal</span>
-                    <strong>{{ format_currency(transaksi.subtotal) }}</strong>
+                    <span>{{ format_currency(transaksi.subtotal) }}</span>
                 </div>
-                <div class="d-flex justify-content-between mb-2 text-danger">
-                    <span>Promo Discount</span>
-                    <strong>- {{ format_currency(promo_discount) }}</strong>
+                {% if promo_discount > 0 %}
+                <div class="d-flex justify-content-between text-danger">
+                    <span>Diskon Promo</span>
+                    <span>- {{ format_currency(promo_discount) }}</span>
                 </div>
-                <div class="d-flex justify-content-between mb-2 text-danger">
-                    <span>Redeem Discount</span>
-                    <strong>- {{ format_currency(redeem_discount) }}</strong>
+                {% endif %}
+                {% if redeem_discount > 0 %}
+                <div class="d-flex justify-content-between text-danger">
+                    <span>Diskon Poin</span>
+                    <span>- {{ format_currency(redeem_discount) }}</span>
                 </div>
-                <div class="d-flex justify-content-between border-top pt-3 fs-5">
-                    <span>Grand Total</span>
-                    <strong>{{ format_currency(transaksi.total) }}</strong>
+                {% endif %}
+                
+                <div class="d-flex justify-content-between grand-total">
+                    <span>TOTAL BAYAR</span>
+                    <span>{{ format_currency(transaksi.total) }}</span>
                 </div>
-                <div class="d-flex justify-content-between mt-3">
-                    <span>Payment Method</span>
-                    <strong>{{ pembayaran.metode_pembayaran if pembayaran else '-' }}</strong>
+                
+                <div class="d-flex justify-content-between mt-2 text-muted">
+                    <span>Metode</span>
+                    <span>{{ pembayaran.metode_pembayaran if pembayaran else '-' }}</span>
                 </div>
-                <div class="d-flex justify-content-between mt-2">
-                    <span>Member Point Earned</span>
-                    <strong>{{ point_earned }} Poin</strong>
+                <div class="d-flex justify-content-between text-muted">
+                    <span>Poin Didapat</span>
+                    <span>+{{ point_earned }} Poin</span>
                 </div>
+            </div>
+
+            <!-- QRIS Section -->
+            {% if qris_url and transaksi.status_pembayaran == 'Belum Bayar' %}
+            <div class="text-center mt-4 pt-3" style="border-top: 2px dashed #ccc;">
+                <div class="fw-bold mb-2">Scan QRIS untuk Membayar</div>
+                <img src="{{ qris_url }}" alt="QRIS Code" class="img-fluid border p-2 bg-white" style="max-width: 180px;">
+            </div>
+            {% endif %}
+
+            <!-- Footer -->
+            <div class="receipt-footer">
+                <div class="fw-bold mb-1">TERIMA KASIH</div>
+                <div class="text-muted" style="font-size: 0.8rem;">Silakan simpan nota ini sebagai bukti transaksi.</div>
             </div>
         </div>
 
-        <div class="text-center mt-5">
-            <strong>Thank You</strong>
-        </div>
-
-        {% if qris_url and transaksi.status_pembayaran == 'Belum Bayar' %}
-        <div class="text-center mt-4 border-top pt-3">
-            <h6 class="fw-bold mb-2">Scan QRIS untuk Membayar</h6>
-            <img src="{{ qris_url }}" alt="QRIS Code" class="img-fluid border p-2 bg-white" style="max-width: 200px;">
-        </div>
-        {% endif %}
-
-        <div class="text-end mt-4 no-print">
-            <a href="{{ url_for('karyawan.transaksi') }}" class="btn btn-secondary">Back</a>
-            <button type="button" class="btn btn-primary ms-2" onclick="window.print()">
-                <i class="bi bi-printer"></i> Print Receipt
+        <div class="text-center mt-4 no-print">
+            <a href="{{ url_for('karyawan.transaksi') }}" class="btn btn-secondary px-4">Kembali</a>
+            <button type="button" class="btn btn-primary px-4 ms-2" onclick="window.print()">
+                <i class="bi bi-printer"></i> Cetak Nota
             </button>
         </div>
     </div>
