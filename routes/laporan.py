@@ -490,7 +490,7 @@ def generate_pdf_bytes(filter_type, dt_start, dt_end, search='', sort_by='tangga
             str(summary['total_completed'])
         ]
     ]
-    summary_table = Table(summary_data, colWidths=[1.3*inch]*5)
+    summary_table = Table(summary_data, colWidths=[1.5*inch, 1.4*inch, 1.4*inch, 1.4*inch, 1.4*inch])
     summary_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0d6efd')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
@@ -516,15 +516,15 @@ def generate_pdf_bytes(filter_type, dt_start, dt_end, search='', sort_by='tangga
             tx_data.append([
                 row['kode_transaksi'],
                 row['tanggal'].strftime('%d/%m/%Y') if row['tanggal'] else '-',
-                row['nama_pelanggan'][:15],  # Truncate name for PDF
+                row['nama_pelanggan'][:22],  # Expanded truncate size
                 'Member' if row['member_status'] == 'Member' else 'Non-Mbr',
-                row['layanan'][:12] if row['layanan'] != '-' else '-',
+                row['layanan'][:18] if row['layanan'] != '-' else '-', # Expanded
                 row['status_laundry'][:8] if row['status_laundry'] else '-',
                 'Lunas' if row['status_pembayaran'] == 'Lunas' else 'Belum',
                 _format_currency(row['total'])
             ])
         
-        tx_table = Table(tx_data, colWidths=[0.7*inch, 0.8*inch, 1*inch, 0.65*inch, 0.8*inch, 0.65*inch, 0.65*inch, 0.9*inch])
+        tx_table = Table(tx_data, colWidths=[0.75*inch, 0.85*inch, 1.4*inch, 0.65*inch, 1.3*inch, 0.6*inch, 0.75*inch, 0.95*inch])
         tx_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#17212b')),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
