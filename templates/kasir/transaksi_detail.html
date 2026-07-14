@@ -157,6 +157,10 @@
                     <div class="col-7 fw-bold">{{ transaksi.pelanggan.nama if transaksi.pelanggan else '-' }}</div>
                 </div>
                 <div class="row">
+                    <div class="col-5 text-muted">Kasir</div>
+                    <div class="col-7 fw-bold">{{ transaksi.user.nama if transaksi.user else '-' }}</div>
+                </div>
+                <div class="row">
                     <div class="col-5 text-muted">Status Cucian</div>
                     <div class="col-7">{{ display_status(transaksi.status_laundry) }}</div>
                 </div>
