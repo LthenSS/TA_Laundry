@@ -27,7 +27,14 @@
                 <tr>
                     <td>{{ loop.index }}</td>
                     <td class="text-primary">PLG-{{ "%04d"|format(pelanggan.id) }}</td>
-                    <td class="fw-bold">{{ pelanggan.nama }}</td>
+                    <td class="fw-bold">
+                        {{ pelanggan.nama }}
+                        {% if pelanggan.is_member %}
+                        <span class="badge bg-success ms-2" style="font-size: 0.75rem;"><i class="bi bi-star-fill"></i> Member</span>
+                        {% else %}
+                        <span class="badge bg-secondary ms-2" style="font-size: 0.75rem;">Reguler</span>
+                        {% endif %}
+                    </td>
                     <td>{{ pelanggan.no_hp }}</td>
                     <td>{{ pelanggan.alamat[:50] }}{% if pelanggan.alamat|length > 50 %}...{% endif %}</td>
                     <td class="text-success fw-bold">{{ pelanggan.total_point }} Poin</td>
