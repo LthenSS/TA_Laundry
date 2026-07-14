@@ -752,6 +752,17 @@ def member_edit(id):
     return render_template("kasir/member_form.html", customer=customer)
 
 
+@kasir_bp.route("/member/hapus/<int:id>", methods=["POST"])
+@login_required
+@karyawan_required
+def member_hapus(id):
+    customer = Pelanggan.query.get_or_404(id)
+    db.session.delete(customer)
+    db.session.commit()
+    flash(f"Pelanggan '{customer.nama}' berhasil dihapus.", "success")
+    return redirect(url_for("karyawan.member"))
+
+
 @kasir_bp.route("/member/jadikan-member/<int:id>", methods=["POST"])
 @login_required
 @karyawan_required

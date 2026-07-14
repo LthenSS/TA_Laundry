@@ -29,6 +29,9 @@
                         <i class="bi bi-people-fill"></i><span>Kelola Karyawan</span>
                     </a>
                     <!-- Kelola Member removed from Owner view - Owner only monitors customer statistics via Dashboard -->
+                    <a class="sw-nav-item {% if request.endpoint and request.endpoint.startswith('member.') %}active{% endif %}" href="{{ url_for('member.index') }}">
+                        <i class="bi bi-person-lines-fill"></i><span>Daftar Pelanggan</span>
+                    </a>
                     <a class="sw-nav-item {% if request.endpoint and request.endpoint.startswith('promo.') %}active{% endif %}" href="{{ url_for('promo.index') }}">
                         <i class="bi bi-tag-fill"></i><span>Kelola Promo</span>
                     </a>

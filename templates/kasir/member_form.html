@@ -7,7 +7,8 @@
 <section class="sw-kasir-panel">
     <header class="sw-kasir-panel-title"><i class="bi bi-pencil-fill"></i> Edit Data Pelanggan</header>
     <div class="p-4">
-        <form method="post" class="row g-4">
+        <!-- Form EDIT (terpisah dari form hapus) -->
+        <form id="editForm" method="post" class="row g-4">
             <div class="col-md-6">
                 <label for="nama" class="form-label">Nama <span class="text-danger">*</span></label>
                 <input type="text" class="form-control" id="nama" name="nama" value="{{ customer.nama }}" required>
@@ -21,11 +22,42 @@
                 <label for="alamat" class="form-label">Alamat <span class="text-danger">*</span></label>
                 <textarea class="form-control" id="alamat" name="alamat" rows="4" required>{{ customer.alamat or '' }}</textarea>
             </div>
-            <div class="col-12 text-end">
-                <a href="{{ url_for('karyawan.member') }}" class="btn btn-secondary">Batal</a>
-                <button type="submit" class="btn btn-primary ms-2">Simpan Perubahan</button>
+            <div class="col-12 d-flex justify-content-between align-items-center">
+                <!-- Tombol hapus: trigger SweetAlert, lalu submit form hapus terpisah -->
+                <button type="button" class="btn btn-danger" id="btnHapus">
+                    <i class="bi bi-trash-fill"></i> Hapus Pelanggan
+                </button>
+                <div>
+                    <a href="{{ url_for('karyawan.member') }}" class="btn btn-secondary">Batal</a>
+                    <button type="submit" class="btn btn-primary ms-2">Simpan Perubahan</button>
+                </div>
             </div>
         </form>
+
+        <!-- Form HAPUS terpisah, tidak bersarang -->
+        <form id="hapusForm" method="post" action="{{ url_for('karyawan.member_hapus', id=customer.id) }}" style="display:none;"></form>
     </div>
 </section>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.getElementById('btnHapus').addEventListener('click', function() {
+    Swal.fire({
+        title: 'Hapus Pelanggan?',
+        text: "Data pelanggan '{{ customer.nama }}' akan dihapus secara permanen!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Ya, Hapus!',
+        cancelButtonText: 'Batal'
+    }).then(function(result) {
+        if (result.isConfirmed) {
+            document.getElementById('hapusForm').submit();
+        }
+    });
+});
+</script>
 {% endblock %}
