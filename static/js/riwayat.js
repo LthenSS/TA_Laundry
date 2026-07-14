@@ -192,12 +192,22 @@ document.addEventListener('DOMContentLoaded', function () {
 </body>
 </html>`;
 
-        const printWindow = window.open('', '_blank', 'width=800,height=700,scrollbars=yes');
-        if (printWindow) {
-            printWindow.document.write(notaHTML);
-            printWindow.document.close();
+        // Use Blob URL to bypass popup blockers
+        const blob = new Blob([notaHTML], { type: 'text/html' });
+        const blobUrl = URL.createObjectURL(blob);
+        const newTab = window.open(blobUrl, '_blank');
+        if (newTab) {
+            // Cleanup blob URL after tab opens
+            setTimeout(function() { URL.revokeObjectURL(blobUrl); }, 5000);
         } else {
-            alert('Popup diblokir browser. Harap izinkan popup untuk mencetak nota.');
+            // Fallback: download as HTML file
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = 'nota-' + (data.kode || 'transaksi') + '.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(function() { URL.revokeObjectURL(blobUrl); }, 2000);
         }
     }
 
