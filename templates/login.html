@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="id">
 <head>
     <meta charset="utf-8">
@@ -12,10 +12,7 @@
     <main class="sw-login-bg">
         <section class="sw-login-panel">
             <div class="sw-brand-mark" aria-label="Smart Wash Laundry">
-                <div>
-                    <span class="brand-bubble"></span>
-                    <div class="brand-text">SMART WASH<br>LAUNDRY</div>
-                </div>
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Smart Wash Laundry Logo" style="width: 320px; height: auto; object-fit: contain; transform: scale(1.1); margin-bottom: 20px;">
             </div>
 
             {% with messages = get_flashed_messages(with_categories=true) %}
@@ -31,15 +28,29 @@
             <form class="sw-login-form" method="post" action="{{ url_for('auth.login') }}">
                 <label class="sw-login-control" for="username">
                     <i class="bi bi-person"></i>
-                    <input type="text" id="username" name="username" placeholder="budi" required autofocus>
+                    <input type="text" id="username" name="username" required autofocus>
                 </label>
                 <label class="sw-login-control" for="password">
                     <i class="bi bi-lock"></i>
-                    <input type="password" id="password" name="password" placeholder="owner01" required>
+                    <input type="password" id="password" name="password" required>
+                    <i class="bi bi-eye-slash" id="togglePassword" style="cursor: pointer; padding: 0 10px;"></i>
                 </label>
                 <button type="submit" class="sw-login-button">LOGIN</button>
             </form>
         </section>
     </main>
+    <script>
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+
+        if (togglePassword && passwordInput) {
+            togglePassword.addEventListener('click', function () {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                this.classList.toggle('bi-eye');
+                this.classList.toggle('bi-eye-slash');
+            });
+        }
+    </script>
 </body>
 </html>
