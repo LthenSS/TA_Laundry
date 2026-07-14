@@ -1064,6 +1064,7 @@ def riwayat_detail(id_transaksi):
         'id': transaksi.id_transaksi,
         'kode': getattr(transaksi, 'kode_transaksi', transaksi.id_transaksi),
         'tanggal': transaksi.tanggal.strftime('%d/%m/%Y %H:%M') if transaksi.tanggal else '-',
+        'kasir_nama': transaksi.user.nama if transaksi.user else '-',
         'pelanggan': {
             'nama': pelanggan.nama if pelanggan else '-',
             'no_hp': pelanggan.no_hp if pelanggan else '-',

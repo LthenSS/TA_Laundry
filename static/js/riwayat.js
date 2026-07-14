@@ -141,6 +141,7 @@ document.addEventListener('DOMContentLoaded', function () {
     <div class="receipt-info">
         <div class="row"><span>No. Nota</span><strong>${data.kode}</strong></div>
         <div class="row"><span>Pelanggan</span><strong>${data.pelanggan.nama}</strong></div>
+        <div class="row"><span>Kasir</span><strong>${data.kasir_nama || '-'}</strong></div>
         <div class="row"><span>Status Cucian</span><span>${data.status_laundry}</span></div>
         <div class="row">
             <span>Pembayaran</span>
