@@ -993,11 +993,10 @@ def riwayat_detail(id_transaksi):
     qris_url = None
     if pembayaran and pembayaran.metode == 'QRIS' and transaksi.status_pembayaran == 'Belum Bayar':
         try:
-            from routes.kasir import _fetch_qris_payload
             qris_payload = _fetch_qris_payload(transaksi)
             qris_url = qris_payload.get('qris_url') if isinstance(qris_payload, dict) else None
-        except Exception:
-            pass
+        except Exception as e:
+            current_app.logger.error(f"Failed to fetch QRIS payload in riwayat_detail: {e}")
 
     return jsonify({
         'id': transaksi.id_transaksi,
