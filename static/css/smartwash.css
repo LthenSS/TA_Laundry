@@ -1,4 +1,4 @@
-﻿:root {
+:root {
     --sw-blue: #294fc8;
     --sw-blue-dark: #1f3fa7;
     --sw-cyan: #84d5e5;
@@ -39,6 +39,7 @@ body {
     justify-content: center;
     padding: 32px;
     background: var(--sw-blue);
+    overflow: hidden;
 }
 
 .sw-login-bg::before,
