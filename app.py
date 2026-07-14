@@ -97,6 +97,16 @@ def create_app():
     from tasks import init_scheduler
     init_scheduler(app)
 
+    @app.after_request
+    def add_header(response):
+        # Mencegah browser menyimpan cache halaman
+        # Sehingga jika user logout dan menekan tombol 'Back', browser akan
+        # memaksa untuk memuat ulang halaman (yang akan diarahkan ke halaman login)
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '-1'
+        return response
+
     return app
 
 
