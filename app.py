@@ -93,6 +93,10 @@ def create_app():
         db.create_all()
         seed_default_user(app)
 
+    # Initialize background scheduler for daily reports
+    from tasks import init_scheduler
+    init_scheduler(app)
+
     return app
 
 

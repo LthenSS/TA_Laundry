@@ -72,7 +72,14 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     WHATSAPP_API_URL = "https://api.fonnte.com/send"
-    WHATSAPP_API_KEY = "N6EExCzt3r1iH9Zr5Tuf"
+    WHATSAPP_API_KEY = "oUhJEJK4hV82mvrDHGyp"
     WHATSAPP_SENDER = "Smart Wash Laundry"
     QRIS_API_URL = os.getenv("QRIS_API_URL", "")
     QRIS_API_KEY = os.getenv("QRIS_API_KEY", "")
+    
+    # Email configuration for daily reports
+    MAIL_SERVER = os.getenv("MAIL_SERVER", "smtp.gmail.com")
+    MAIL_PORT = int(os.getenv("MAIL_PORT", 587))
+    MAIL_USERNAME = os.getenv("MAIL_USERNAME", "pradikamaula01@gmail.com")
+    MAIL_PASSWORD = os.getenv("MAIL_PASSWORD", "")
+    MAIL_RECEIVER = os.getenv("MAIL_RECEIVER", "pradikamaula01@gmail.com")

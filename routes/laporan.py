@@ -440,12 +440,121 @@ def index():
     )
 
 
+def generate_pdf_bytes(filter_type, dt_start, dt_end, search='', sort_by='tanggal'):
+    """Generate PDF report and return BytesIO object"""
+    # Get all data using reusable functions
+    summary = _get_summary_data(dt_start, dt_end)
+    table_data = _get_all_table_data(dt_start, dt_end, search, sort_by)
+    
+    # Create PDF
+    pdf_bytes = BytesIO()
+    doc = SimpleDocTemplate(pdf_bytes, pagesize=A4, topMargin=0.5*inch, bottomMargin=0.5*inch)
+    elements = []
+    
+    # Setup styles
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=18,
+        textColor=colors.HexColor('#17212b'),
+        spaceAfter=6,
+        alignment=TA_CENTER,
+        fontName='Helvetica-Bold'
+    )
+    subtitle_style = ParagraphStyle(
+        'CustomSubtitle',
+        parent=styles['Normal'],
+        fontSize=11,
+        textColor=colors.HexColor('#6c757d'),
+        spaceAfter=12,
+        alignment=TA_CENTER
+    )
+    
+    # Title
+    elements.append(Paragraph("SMART WASH LAUNDRY", title_style))
+    filter_label = _get_filter_label(filter_type, dt_start, dt_end)
+    generated_date = datetime.now().strftime('%d/%m/%Y %H:%M')
+    elements.append(Paragraph(f"Laporan - {filter_label}", subtitle_style))
+    elements.append(Paragraph(f"Periode: {dt_start.strftime('%d/%m/%Y')} s/d {dt_end.strftime('%d/%m/%Y')} | Dibuat: {generated_date}", subtitle_style))
+    elements.append(Spacer(1, 0.15*inch))
+    
+    # Summary Cards as Table
+    summary_data = [
+        ['Total Pendapatan', 'Total Transaksi', 'Total Pelanggan', 'Total Member', 'Selesai'],
+        [
+            _format_currency(summary['total_revenue']),
+            str(summary['total_transactions']),
+            str(summary['total_customers']),
+            str(summary['total_members']),
+            str(summary['total_completed'])
+        ]
+    ]
+    summary_table = Table(summary_data, colWidths=[1.3*inch]*5)
+    summary_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0d6efd')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+        ('TOPPADDING', (0, 0), (-1, 0), 8),
+        ('GRID', (0, 0), (-1, -1), 1, colors.grey),
+        ('FONTSIZE', (0, 1), (-1, -1), 9),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.beige, colors.white]),
+    ]))
+    elements.append(summary_table)
+    elements.append(Spacer(1, 0.2*inch))
+    
+    # Transaction Table
+    if table_data:
+        tx_data = [
+            ['Kode', 'Tanggal', 'Pelanggan', 'Status', 'Layanan', 'Cucian', 'Pembayaran', 'Total']
+        ]
+        
+        for row in table_data:
+            tx_data.append([
+                row['kode_transaksi'],
+                row['tanggal'].strftime('%d/%m/%Y') if row['tanggal'] else '-',
+                row['nama_pelanggan'][:15],  # Truncate name for PDF
+                'Member' if row['member_status'] == 'Member' else 'Non-Mbr',
+                row['layanan'][:12] if row['layanan'] != '-' else '-',
+                row['status_laundry'][:8] if row['status_laundry'] else '-',
+                'Lunas' if row['status_pembayaran'] == 'Lunas' else 'Belum',
+                _format_currency(row['total'])
+            ])
+        
+        tx_table = Table(tx_data, colWidths=[0.7*inch, 0.8*inch, 1*inch, 0.65*inch, 0.8*inch, 0.65*inch, 0.65*inch, 0.9*inch])
+        tx_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#17212b')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 8),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
+            ('TOPPADDING', (0, 0), (-1, 0), 6),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('FONTSIZE', (0, 1), (-1, -1), 7),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.HexColor('#f8f9fa'), colors.white]),
+            ('ALIGN', (7, 0), (7, -1), 'RIGHT'),  # Right align Total column
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ]))
+        elements.append(Paragraph("Daftar Transaksi", styles['Heading3']))
+        elements.append(tx_table)
+    else:
+        elements.append(Paragraph("Tidak ada data transaksi untuk periode ini.", styles['Normal']))
+    
+    # Build PDF
+    doc.build(elements)
+    pdf_bytes.seek(0)
+    return pdf_bytes
+
+
 @laporan_bp.route("/export")
 @login_required
 @owner_required
 def export():
     """Export current report as PDF"""
-    
     try:
         # Get filter parameters
         filter_type = request.args.get('filter', 'harian')
@@ -457,114 +566,9 @@ def export():
         # Get date range
         dt_start, dt_end = _get_date_range(filter_type, start_date, end_date)
         
-        # Get all data using reusable functions
-        summary = _get_summary_data(dt_start, dt_end)
-        table_data = _get_all_table_data(dt_start, dt_end, search, sort_by)
-        stats = _get_statistics_data(dt_start, dt_end)
+        # Generate PDF
+        pdf_bytes = generate_pdf_bytes(filter_type, dt_start, dt_end, search, sort_by)
         
-        # Create PDF
-        pdf_bytes = BytesIO()
-        doc = SimpleDocTemplate(pdf_bytes, pagesize=A4, topMargin=0.5*inch, bottomMargin=0.5*inch)
-        elements = []
-        
-        # Setup styles
-        styles = getSampleStyleSheet()
-        title_style = ParagraphStyle(
-            'CustomTitle',
-            parent=styles['Heading1'],
-            fontSize=18,
-            textColor=colors.HexColor('#17212b'),
-            spaceAfter=6,
-            alignment=TA_CENTER,
-            fontName='Helvetica-Bold'
-        )
-        subtitle_style = ParagraphStyle(
-            'CustomSubtitle',
-            parent=styles['Normal'],
-            fontSize=11,
-            textColor=colors.HexColor('#6c757d'),
-            spaceAfter=12,
-            alignment=TA_CENTER
-        )
-        
-        # Title
-        elements.append(Paragraph("SMART WASH LAUNDRY", title_style))
-        filter_label = _get_filter_label(filter_type, dt_start, dt_end)
-        generated_date = datetime.now().strftime('%d/%m/%Y %H:%M')
-        elements.append(Paragraph(f"Laporan - {filter_label}", subtitle_style))
-        elements.append(Paragraph(f"Periode: {dt_start.strftime('%d/%m/%Y')} s/d {dt_end.strftime('%d/%m/%Y')} | Dibuat: {generated_date}", subtitle_style))
-        elements.append(Spacer(1, 0.15*inch))
-        
-        # Summary Cards as Table
-        summary_data = [
-            ['Total Pendapatan', 'Total Transaksi', 'Total Pelanggan', 'Total Member', 'Selesai'],
-            [
-                _format_currency(summary['total_revenue']),
-                str(summary['total_transactions']),
-                str(summary['total_customers']),
-                str(summary['total_members']),
-                str(summary['total_completed'])
-            ]
-        ]
-        summary_table = Table(summary_data, colWidths=[1.3*inch]*5)
-        summary_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0d6efd')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 10),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
-            ('TOPPADDING', (0, 0), (-1, 0), 8),
-            ('GRID', (0, 0), (-1, -1), 1, colors.grey),
-            ('FONTSIZE', (0, 1), (-1, -1), 9),
-            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.beige, colors.white]),
-        ]))
-        elements.append(summary_table)
-        elements.append(Spacer(1, 0.2*inch))
-        
-        # Transaction Table
-        if table_data:
-            tx_data = [
-                ['Kode', 'Tanggal', 'Pelanggan', 'Status', 'Layanan', 'Cucian', 'Pembayaran', 'Total']
-            ]
-            
-            for row in table_data:
-                tx_data.append([
-                    row['kode_transaksi'],
-                    row['tanggal'].strftime('%d/%m/%Y') if row['tanggal'] else '-',
-                    row['nama_pelanggan'][:15],  # Truncate name for PDF
-                    'Member' if row['member_status'] == 'Member' else 'Non-Mbr',
-                    row['layanan'][:12] if row['layanan'] != '-' else '-',
-                    row['status_laundry'][:8] if row['status_laundry'] else '-',
-                    'Lunas' if row['status_pembayaran'] == 'Lunas' else 'Belum',
-                    _format_currency(row['total'])
-                ])
-            
-            tx_table = Table(tx_data, colWidths=[0.7*inch, 0.8*inch, 1*inch, 0.65*inch, 0.8*inch, 0.65*inch, 0.65*inch, 0.9*inch])
-            tx_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#17212b')),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, 0), 8),
-                ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
-                ('TOPPADDING', (0, 0), (-1, 0), 6),
-                ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-                ('FONTSIZE', (0, 1), (-1, -1), 7),
-                ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.HexColor('#f8f9fa'), colors.white]),
-                ('ALIGN', (7, 0), (7, -1), 'RIGHT'),  # Right align Total column
-                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ]))
-            elements.append(Paragraph("Daftar Transaksi", styles['Heading3']))
-            elements.append(tx_table)
-        else:
-            elements.append(Paragraph("Tidak ada data transaksi untuk periode ini.", styles['Normal']))
-        
-        # Build PDF
-        doc.build(elements)
-        
-        # Return PDF file
-        pdf_bytes.seek(0)
         filename = f"laporan_{filter_type}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
         return send_file(
             pdf_bytes,
@@ -572,7 +576,37 @@ def export():
             as_attachment=True,
             download_name=filename
         )
-    
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
+@laporan_bp.route("/test-email")
+@login_required
+@owner_required
+def test_email():
+    """Manually trigger daily report email for testing"""
+    try:
+        from flask import current_app
+        from utils.email_sender import send_daily_report
+        
+        # Get date range for today
+        dt_start, dt_end = _get_date_range('harian', None, None)
+        
+        # Generate PDF
+        pdf_bytes = generate_pdf_bytes('harian', dt_start, dt_end)
+        
+        filename = f"laporan_harian_TEST_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+        
+        receiver_email = request.args.get('email') or current_app.config.get('MAIL_RECEIVER')
+        if not receiver_email:
+            return jsonify({'success': False, 'error': 'No receiver email configured. Add MAIL_RECEIVER to .env or pass ?email=...'})
+            
+        success = send_daily_report(pdf_bytes, filename, receiver_email)
+        
+        if success:
+            return jsonify({'success': True, 'message': f'Test email successfully sent to {receiver_email}'})
+        else:
+            return jsonify({'success': False, 'error': 'Failed to send email. Check server logs and credentials.'})
+            
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
