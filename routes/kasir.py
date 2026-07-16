@@ -215,7 +215,7 @@ def _fetch_qris_payload(transaksi):
         import urllib.parse
         from flask import url_for
         # Generate a dummy QRIS payload pointing to our simulation page
-        success_url = url_for('kasir.api_qris_success', amount=int(amount), _external=True)
+        success_url = url_for('karyawan.api_qris_success', amount=int(amount), _external=True)
         encoded_data = urllib.parse.quote(success_url)
         return {
             "note": "Mode Demo: Menampilkan QRIS (Mock API).",
@@ -987,7 +987,7 @@ def api_qris_generate():
     import urllib.parse
     from flask import url_for
     # Generate a dummy QRIS payload pointing to our simulation page
-    success_url = url_for('kasir.api_qris_success', amount=int(amount), _external=True)
+    success_url = url_for('karyawan.api_qris_success', amount=int(amount), _external=True)
     encoded_data = urllib.parse.quote(success_url)
     
     qris_url = f"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={encoded_data}"
