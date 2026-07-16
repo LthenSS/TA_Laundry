@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
         qrisUrlContainer.innerHTML = '';
         if (data.qris_url) {
             if (data.qris_url.includes('qrserver') || data.qris_url.match(/\.(jpeg|jpg|gif|png)$/) != null) {
-                qrisUrlContainer.innerHTML = '<div class="text-center mt-3 mb-3"><img src="' + data.qris_url + '" alt="QRIS" class="img-fluid border rounded shadow-sm" style="max-width: 250px; cursor: pointer;" title="Klik untuk simulasi sukses pembayaran" onclick="Swal.fire({icon:\'success\',title:\'Pembayaran Berhasil\',text:\'Pembayaran telah diterima.\',confirmButtonText:\'Lanjutkan\',confirmButtonColor:\'#28a745\'})"></div><p class="text-muted small text-center"><em>* Scan dengan kamera HP atau klik gambar QR di atas untuk simulasi pembayaran berhasil.</em></p>';
+                qrisUrlContainer.innerHTML = '<div class="text-center mt-3 mb-3"><img src="' + data.qris_url + '" alt="QRIS" class="img-fluid border rounded shadow-sm" style="max-width: 250px; cursor: pointer;" title="Klik untuk simulasi sukses pembayaran" onclick="Swal.fire({icon:\'success\',title:\'Pembayaran Berhasil\',text:\'Pembayaran telah diterima.\',confirmButtonText:\'Lanjutkan\',confirmButtonColor:\'#28a745\'})"></div>';
             } else {
                 qrisUrlContainer.innerHTML = '<strong>Link QRIS:</strong> <a href="' + data.qris_url + '" target="_blank" rel="noopener noreferrer">' + data.qris_url + '</a>';
             }
