@@ -281,18 +281,24 @@ def dashboard():
         Transaksi.query
         .filter(Transaksi.status_laundry != "Selesai")
         .order_by(Transaksi.tanggal.desc())
-        .limit(3)
+        .limit(10)
         .all()
     )
-    transaksi_list = [alias_transaction(transaksi) for transaksi in transaksi_list]
+
     orders = []
     for transaksi in transaksi_list:
         pelanggan = Pelanggan.query.get(transaksi.pelanggan_id)
+        # Ambil nama layanan dari detail transaksi
+        details = DetailTransaksi.query.options(
+            selectinload(DetailTransaksi.layanan)
+        ).filter_by(transaksi_id_transaksi=transaksi.id_transaksi).all()
+        layanan_str = ', '.join([d.layanan.nama_layanan for d in details if d.layanan]) \
+                      if details else (transaksi.catatan or '-')
         orders.append({
             "id": transaksi.id_transaksi,
             "kode": getattr(transaksi, 'kode_transaksi', transaksi.id_transaksi),
             "pelanggan": pelanggan.nama if pelanggan else "-",
-            "layanan": transaksi.catatan or "-",
+            "layanan": layanan_str,
             "status": transaksi.status_laundry,
             "status_class": _status_class(transaksi.status_laundry),
             "action": "Lihat",

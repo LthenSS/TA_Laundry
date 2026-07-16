@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, jsonify, request
 from sqlalchemy import func, and_, extract, or_
 from sqlalchemy.orm import selectinload
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date as date_type
 from decimal import Decimal
 
 from models import db
@@ -109,6 +109,37 @@ def index():
             'count': count,
             'total': _format_currency(total_amount or 0)
         })
+
+    # 8. Recent Active Transactions (cucian aktif untuk tabel)
+    recent_txns_raw = (
+        db.session.query(Transaksi)
+        .options(selectinload(Transaksi.pelanggan))
+        .filter(Transaksi.status_laundry != 'Selesai')
+        .order_by(Transaksi.tanggal.desc())
+        .limit(8)
+        .all()
+    )
+
+    STATUS_COLOR = {
+        'Antrian': 'sw-status-queue',
+        'Diproses': 'sw-status-wash',
+        'Siap Diambil': 'sw-status-ready',
+        'Selesai': 'sw-status-done',
+    }
+
+    recent_transactions = []
+    for trx in recent_txns_raw:
+        # Ambil semua layanan dari detail transaksi
+        details = DetailTransaksi.query.options(selectinload(DetailTransaksi.layanan)).filter_by(transaksi_id_transaksi=trx.id_transaksi).all()
+        layanan_names = ', '.join([d.layanan.nama_layanan for d in details if d.layanan]) if details else (trx.catatan or '-')
+        recent_transactions.append({
+            'id': trx.id_transaksi,
+            'pelanggan': trx.pelanggan.nama if trx.pelanggan else '-',
+            'layanan': layanan_names,
+            'status': trx.status_laundry,
+            'status_class': STATUS_COLOR.get(trx.status_laundry, ''),
+            'total': _format_currency(trx.total or 0),
+        })
     
     return render_template(
         "dashboard.html",
@@ -118,7 +149,8 @@ def index():
         total_members=total_members,
         total_non_members=total_non_members,
         status_summary=status_data,
-        top_services=top_services_list
+        top_services=top_services_list,
+        recent_transactions=recent_transactions,
     )
 
 
@@ -206,23 +238,26 @@ def api_revenue_by_month():
         extract('month', Transaksi.tanggal)
     ).all()
     
-    # Create month labels
-    months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    # Create ordered month list for the last 12 months
+    months_id = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
     month_labels = []
     revenue_values = []
     
-    # Initialize all months in range with 0
-    for i in range(12):
-        check_date = end_date - timedelta(days=365-i*30)
-        month_labels.append(months[check_date.month - 1])
-        revenue_values.append(0)
+    # Build ordered list of (year, month) for the last 12 months
+    ordered_months = []
+    for i in range(11, -1, -1):
+        d = end_date - timedelta(days=i * 30)
+        ordered_months.append((d.year, d.month))
     
-    # Fill in actual data
+    # Build lookup from actual data
+    revenue_lookup = {}
     for year, month, revenue in revenue_data:
-        if month and year:
-            idx = int(month) - 1
-            if 0 <= idx < 12:
-                revenue_values[idx] = float(revenue or 0)
+        if year and month:
+            revenue_lookup[(int(year), int(month))] = float(revenue or 0)
+    
+    for (yr, mo) in ordered_months:
+        month_labels.append(months_id[mo - 1])
+        revenue_values.append(revenue_lookup.get((yr, mo), 0))
     
     return jsonify({
         'labels': month_labels,
@@ -249,22 +284,27 @@ def api_transactions_by_day():
         func.date(Transaksi.tanggal)
     ).all()
     
-    # Create date labels
+    # Create date labels and lookup
+    day_labels_id = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min']
     day_labels = []
     transaction_counts = []
-    
+    date_index_map = {}
+
     for i in range(7):
         check_date = start_date + timedelta(days=i)
-        day_labels.append(check_date.strftime('%a'))
+        day_labels.append(day_labels_id[check_date.weekday()])
         transaction_counts.append(0)
-    
+        date_index_map[check_date] = i
+
     # Fill in actual data
     for tx_date, count in transactions_data:
         if tx_date:
-            date_obj = tx_date if isinstance(tx_date, datetime) else datetime.combine(tx_date, datetime.min.time())
-            days_diff = (date_obj.date() - start_date).days
-            if 0 <= days_diff < 7:
-                transaction_counts[days_diff] = count
+            if isinstance(tx_date, datetime):
+                d = tx_date.date()
+            else:
+                d = tx_date
+            if d in date_index_map:
+                transaction_counts[date_index_map[d]] = count
     
     return jsonify({
         'labels': day_labels,

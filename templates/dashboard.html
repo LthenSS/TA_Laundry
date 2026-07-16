@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 
 {% block title %}Dashboard - Smart Wash Laundry{% endblock %}
 
@@ -323,8 +323,12 @@
     </div>
 </div>
 
-<!-- Recent Transactions Table -->
+<!-- Recent Active Transactions Table -->
 <section class="sw-table-card">
+    <div class="d-flex justify-content-between align-items-center px-3 pt-3 pb-2">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-pin-angle-fill text-danger me-2"></i>Cucian Aktif</h5>
+        <a href="{{ url_for('dashboard.riwayat') }}" class="btn btn-sm btn-outline-primary">Lihat Semua</a>
+    </div>
     <div class="table-responsive">
         <table class="sw-table">
             <thead>
@@ -337,34 +341,22 @@
                 </tr>
             </thead>
             <tbody>
+                {% for trx in recent_transactions %}
                 <tr>
-                    <td class="text-primary">TRX-0601</td>
-                    <td>Anton</td>
-                    <td>Cuci Komplit (3kg)</td>
-                    <td><span class="sw-status sw-status-wash">Sedang dicuci</span></td>
-                    <td class="text-end fw-bold">24.000</td>
+                    <td class="text-primary fw-semibold">{{ trx.id }}</td>
+                    <td>{{ trx.pelanggan }}</td>
+                    <td>{{ trx.layanan }}</td>
+                    <td><span class="sw-status {{ trx.status_class }}">{{ trx.status }}</span></td>
+                    <td class="text-end fw-bold">{{ trx.total }}</td>
                 </tr>
+                {% else %}
                 <tr>
-                    <td class="text-primary">TRX-0602</td>
-                    <td>Siti</td>
-                    <td>Setrika Saja (5kg)</td>
-                    <td><span class="sw-status sw-status-ready">Siap Diambil</span></td>
-                    <td class="text-end fw-bold">25.000</td>
+                    <td colspan="5" class="text-center text-muted py-4">
+                        <i class="bi bi-inbox fs-4 d-block mb-2"></i>
+                        Tidak ada cucian aktif saat ini
+                    </td>
                 </tr>
-                <tr>
-                    <td class="text-primary">TRX-0603</td>
-                    <td>Dimas</td>
-                    <td>Cuci Kering (2kg)</td>
-                    <td><span class="sw-status sw-status-done">Selesai</span></td>
-                    <td class="text-end fw-bold">12.000</td>
-                </tr>
-                <tr>
-                    <td class="text-primary">TRX-0604</td>
-                    <td>Eni</td>
-                    <td>Cuci Komplit (3kg), Pewangi Ekstra</td>
-                    <td><span class="sw-status sw-status-queue">Antrian</span></td>
-                    <td class="text-end fw-bold">27.000</td>
-                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
