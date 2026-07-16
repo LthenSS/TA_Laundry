@@ -351,6 +351,25 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             if (data.success && data.qris_url) {
                 qrisImage.src = data.qris_url;
+                qrisImage.title = "Klik untuk simulasi sukses pembayaran";
+                qrisImage.style.cursor = "pointer";
+                qrisImage.onclick = function() {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Simulasi Berhasil',
+                        text: 'Pembayaran disimulasikan sebagai Lunas.',
+                        confirmButtonText: 'Lanjutkan',
+                        confirmButtonColor: '#28a745'
+                    });
+                };
+                // add instruction text
+                if (!document.getElementById('qris-instruction')) {
+                    const inst = document.createElement('p');
+                    inst.id = 'qris-instruction';
+                    inst.className = 'text-muted small mt-2';
+                    inst.innerHTML = '<em>* Scan dengan kamera HP atau klik gambar QR di atas untuk simulasi pembayaran berhasil.</em>';
+                    qrisContainer.appendChild(inst);
+                }
                 qrisImage.onload = () => {
                     qrisLoading.classList.add('d-none');
                     qrisImage.classList.remove('d-none');

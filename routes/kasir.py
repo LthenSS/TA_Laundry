@@ -213,10 +213,10 @@ def _fetch_qris_payload(transaksi):
 
     if not api_url:
         import urllib.parse
-        # Generate a dummy QRIS payload (EMVCo format approximation)
-        amount_str = str(int(amount))
-        qris_data = f"00020101021126670016COM.NOBUBANK.WWW01189360050300000879140214300346369018440315ID102124503463690184520454995303360540{len(amount_str):02d}{amount_str}5802ID5919Smart Wash Laundry6015Jakarta Selatan61051219062160712{transaction_code}6304"
-        encoded_data = urllib.parse.quote(qris_data)
+        from flask import url_for
+        # Generate a dummy QRIS payload pointing to our simulation page
+        success_url = url_for('kasir.api_qris_success', amount=int(amount), _external=True)
+        encoded_data = urllib.parse.quote(success_url)
         return {
             "note": "Mode Demo: Menampilkan QRIS (Mock API).",
             "amount": amount,
@@ -983,16 +983,30 @@ def qris():
 def api_qris_generate():
     data = request.json or {}
     amount = float(data.get("amount", 0))
-    # Dummy transaction code just for display purposes
-    transaction_code = "TRX-PREVIEW"
     
     import urllib.parse
-    amount_str = str(int(amount))
-    qris_data = f"00020101021126670016COM.NOBUBANK.WWW01189360050300000879140214300346369018440315ID102124503463690184520454995303360540{len(amount_str):02d}{amount_str}5802ID5919Smart Wash Laundry6015Jakarta Selatan61051219062160712{transaction_code}6304"
-    encoded_data = urllib.parse.quote(qris_data)
+    from flask import url_for
+    # Generate a dummy QRIS payload pointing to our simulation page
+    success_url = url_for('kasir.api_qris_success', amount=int(amount), _external=True)
+    encoded_data = urllib.parse.quote(success_url)
     
     qris_url = f"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={encoded_data}"
     return jsonify(success=True, qris_url=qris_url)
+
+
+@kasir_bp.route("/api/qris/success", methods=["GET"])
+def api_qris_success():
+    """Halaman simulasi sukses pembayaran saat QR di-scan via HP"""
+    amount = request.args.get("amount", "0")
+    try:
+        amount_val = float(amount)
+        amount_formatted = f"Rp {amount_val:,.0f}".replace(",", ".")
+    except ValueError:
+        amount_formatted = "Rp 0"
+        
+    return render_template("qris_success.html", amount_formatted=amount_formatted)
+
+
 
 
 @kasir_bp.route('/riwayat')
