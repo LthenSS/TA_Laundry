@@ -356,8 +356,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 qrisImage.onclick = function() {
                     Swal.fire({
                         icon: 'success',
-                        title: 'Simulasi Berhasil',
-                        text: 'Pembayaran disimulasikan sebagai Lunas.',
+                        title: 'Pembayaran Berhasil',
+                        text: 'Pembayaran telah diterima.',
                         confirmButtonText: 'Lanjutkan',
                         confirmButtonColor: '#28a745'
                     });
