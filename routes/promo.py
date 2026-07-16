@@ -71,6 +71,8 @@ def _build_promo_from_form(promo=None):
     nilai_diskon = request.form.get("nilai_diskon", "0").strip()
     minimal_transaksi = request.form.get("minimal_transaksi", "0").strip()
     status = request.form.get("status", "Aktif").strip()
+    tanggal_mulai_str = request.form.get("tanggal_mulai", "").strip()
+    tanggal_selesai_str = request.form.get("tanggal_selesai", "").strip()
 
     try:
         nilai_diskon = Decimal(nilai_diskon)
@@ -90,6 +92,24 @@ def _build_promo_from_form(promo=None):
     if tipe_diskon == "Persen" and nilai_diskon > 100:
         flash("Diskon persen maksimal 100%.", "warning")
         return None
+        
+    tanggal_mulai = None
+    tanggal_selesai = None
+    if tanggal_mulai_str:
+        try:
+            from datetime import datetime
+            tanggal_mulai = datetime.strptime(tanggal_mulai_str, "%Y-%m-%d").date()
+        except ValueError:
+            flash("Format tanggal mulai tidak valid.", "warning")
+            return None
+            
+    if tanggal_selesai_str:
+        try:
+            from datetime import datetime
+            tanggal_selesai = datetime.strptime(tanggal_selesai_str, "%Y-%m-%d").date()
+        except ValueError:
+            flash("Format tanggal selesai tidak valid.", "warning")
+            return None
 
     if promo is None:
         promo = Promo()
@@ -99,5 +119,7 @@ def _build_promo_from_form(promo=None):
     promo.nilai_diskon = nilai_diskon
     promo.minimal_transaksi = minimal_transaksi
     promo.status = status
+    promo.tanggal_mulai = tanggal_mulai
+    promo.tanggal_selesai = tanggal_selesai
 
     return promo

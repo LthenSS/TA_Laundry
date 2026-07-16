@@ -51,8 +51,16 @@ def _best_promo(subtotal):
     promos = Promo.query.filter_by(status="Aktif").all()
     best_promo = None
     best_discount = Decimal("0")
+    
+    from datetime import date
+    today = date.today()
 
     for promo in promos:
+        if promo.tanggal_mulai and today < promo.tanggal_mulai:
+            continue
+        if promo.tanggal_selesai and today > promo.tanggal_selesai:
+            continue
+
         if subtotal < promo.minimal_transaksi:
             continue
 

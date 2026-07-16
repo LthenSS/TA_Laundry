@@ -48,7 +48,10 @@ def buat():
     
     members = Pelanggan.query.order_by(Pelanggan.nama.asc()).all()
     layanan = Layanan.query.order_by(Layanan.nama_layanan.asc()).all()
-    promo = Promo.query.filter_by(status='Aktif').all()
+    from datetime import date
+    today = date.today()
+    all_promos = Promo.query.filter_by(status='Aktif').all()
+    promo = [p for p in all_promos if (not p.tanggal_mulai or today >= p.tanggal_mulai) and (not p.tanggal_selesai or today <= p.tanggal_selesai)]
     
     return render_template("transaksi/form.html", members=members, layanan=layanan, promo=promo, transaksi=None)
 
@@ -65,7 +68,10 @@ def edit(id_transaksi):
     
     members = Pelanggan.query.order_by(Pelanggan.nama.asc()).all()
     layanan = Layanan.query.order_by(Layanan.nama_layanan.asc()).all()
-    promo = Promo.query.filter_by(status='Aktif').all()
+    from datetime import date
+    today = date.today()
+    all_promos = Promo.query.filter_by(status='Aktif').all()
+    promo = [p for p in all_promos if (not p.tanggal_mulai or today >= p.tanggal_mulai) and (not p.tanggal_selesai or today <= p.tanggal_selesai)]
     details = DetailTransaksi.query.filter_by(transaksi_id=id_transaksi).all()
     pembayaran = Pembayaran.query.filter_by(transaksi_id_transaksi=id_transaksi).first()
     

@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 
 {% block title %}{% if promo %}Edit Promo{% else %}Tambah Promo{% endif %} - Smart Wash Laundry{% endblock %}
 
@@ -52,6 +52,21 @@
                         <option value="Aktif" {% if not promo or promo.status == 'Aktif' %}selected{% endif %}>Aktif</option>
                         <option value="Tidak Aktif" {% if promo and promo.status == 'Tidak Aktif' %}selected{% endif %}>Non-Aktif</option>
                     </select>
+                </div>
+            </div>
+
+            <div class="row g-4 mt-1">
+                <div class="col-md-6">
+                    <label for="tanggal_mulai" class="form-label">Tanggal Mulai <span class="text-muted small">(opsional)</span></label>
+                    <input type="date" class="form-control" id="tanggal_mulai" name="tanggal_mulai"
+                        value="{{ promo.tanggal_mulai.strftime('%Y-%m-%d') if promo and promo.tanggal_mulai else '' }}">
+                    <div class="form-text">Kosongkan jika promo berlaku selamanya.</div>
+                </div>
+                <div class="col-md-6">
+                    <label for="tanggal_selesai" class="form-label">Tanggal Selesai <span class="text-muted small">(opsional)</span></label>
+                    <input type="date" class="form-control" id="tanggal_selesai" name="tanggal_selesai"
+                        value="{{ promo.tanggal_selesai.strftime('%Y-%m-%d') if promo and promo.tanggal_selesai else '' }}">
+                    <div class="form-text">Kosongkan jika tidak ada tanggal kadaluarsa.</div>
                 </div>
             </div>
 

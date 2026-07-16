@@ -10,6 +10,8 @@ class Promo(db.Model):
     nilai_diskon = db.Column(db.Numeric(10, 2), nullable=False)
     minimal_transaksi = db.Column(db.Numeric(10, 2), nullable=False)
     status = db.Column(db.Enum("Aktif", "Tidak Aktif"), default="Aktif")
+    tanggal_mulai = db.Column(db.Date, nullable=True)
+    tanggal_selesai = db.Column(db.Date, nullable=True)
 
     def nilai_label(self):
         if self.tipe_diskon == "Persen":

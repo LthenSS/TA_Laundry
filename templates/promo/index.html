@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 
 {% block title %}Promo - Smart Wash Laundry{% endblock %}
 
@@ -21,6 +21,7 @@
                     <th>NAMA PROMO</th>
                     <th>SYARAT PROMO</th>
                     <th>NOMINAL POTONGAN</th>
+                    <th>PERIODE BERLAKU</th>
                     <th>BERLAKU UNTUK</th>
                     <th>STATUS</th>
                     <th>AKSI</th>
@@ -33,6 +34,17 @@
                     <td class="fw-bold">{{ promo.nama_promo }}</td>
                     <td class="text-success fw-bold">{{ promo.minimal_label() }}</td>
                     <td class="text-primary fw-bold">{{ promo.nilai_label() }}</td>
+                    <td class="small">
+                        {% if promo.tanggal_mulai or promo.tanggal_selesai %}
+                            <span class="badge bg-info text-dark">
+                                {{ promo.tanggal_mulai.strftime('%d %b %Y') if promo.tanggal_mulai else '...' }}
+                                &ndash;
+                                {{ promo.tanggal_selesai.strftime('%d %b %Y') if promo.tanggal_selesai else '...' }}
+                            </span>
+                        {% else %}
+                            <span class="badge bg-secondary">Selamanya</span>
+                        {% endif %}
+                    </td>
                     <td class="text-primary">Member & Non-member</td>
                     <td>
                         {% if promo.status == "Aktif" %}
@@ -54,7 +66,7 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="7" class="text-center text-muted py-5">Belum ada data promo.</td>
+                    <td colspan="8" class="text-center text-muted py-5">Belum ada data promo.</td>
                 </tr>
                 {% endfor %}
             </tbody>
