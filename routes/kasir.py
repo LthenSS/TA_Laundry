@@ -1,4 +1,5 @@
 import logging
+import urllib.parse
 from decimal import Decimal, InvalidOperation
 from datetime import datetime
 from json import JSONDecodeError
@@ -7,7 +8,7 @@ from secrets import token_urlsafe
 import requests
 from flask import Blueprint, current_app, flash, redirect, render_template, request, session, url_for, jsonify
 from sqlalchemy import func, or_
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, joinedload
 
 from models import db
 from models.layanan import Layanan
@@ -277,8 +278,13 @@ def dashboard():
         "ready": status_summary.get("Siap Diambil", 0),
     }
 
+    # Satu query dengan eager load pelanggan + detail + layanan
     transaksi_list = (
         Transaksi.query
+        .options(
+            selectinload(Transaksi.pelanggan),
+            selectinload(Transaksi.detail_transaksi).selectinload(DetailTransaksi.layanan),
+        )
         .filter(Transaksi.status_laundry != "Selesai")
         .order_by(Transaksi.tanggal.desc())
         .limit(10)
@@ -287,17 +293,13 @@ def dashboard():
 
     orders = []
     for transaksi in transaksi_list:
-        pelanggan = Pelanggan.query.get(transaksi.pelanggan_id)
-        # Ambil nama layanan dari detail transaksi
-        details = DetailTransaksi.query.options(
-            selectinload(DetailTransaksi.layanan)
-        ).filter_by(transaksi_id_transaksi=transaksi.id_transaksi).all()
+        details = transaksi.detail_transaksi
         layanan_str = ', '.join([d.layanan.nama_layanan for d in details if d.layanan]) \
                       if details else (transaksi.catatan or '-')
         orders.append({
             "id": transaksi.id_transaksi,
             "kode": getattr(transaksi, 'kode_transaksi', transaksi.id_transaksi),
-            "pelanggan": pelanggan.nama if pelanggan else "-",
+            "pelanggan": transaksi.pelanggan.nama if transaksi.pelanggan else "-",
             "layanan": layanan_str,
             "status": transaksi.status_laundry,
             "status_class": _status_class(transaksi.status_laundry),
@@ -829,23 +831,30 @@ def status():
 
     search = request.values.get("q", "").strip()
     status_filter = request.values.get("status", "").strip()
-    orders = Transaksi.query.order_by(Transaksi.tanggal.desc())
+
+    # Gunakan selectinload agar tidak ada N+1 query ke tabel Pelanggan
+    query = (
+        Transaksi.query
+        .options(selectinload(Transaksi.pelanggan))
+        .order_by(Transaksi.tanggal.desc())
+    )
 
     if not status_filter:
-        orders = orders.filter(Transaksi.status_laundry != "Selesai")
+        query = query.filter(Transaksi.status_laundry != "Selesai")
 
     if search:
         q = f"%{search}%"
-        orders = orders.join(Pelanggan, Transaksi.pelanggan_id == Pelanggan.id).filter(
+        query = query.join(Pelanggan, Transaksi.pelanggan_id == Pelanggan.id).filter(
             or_(Pelanggan.nama.ilike(q), Pelanggan.no_hp.ilike(q), Transaksi.id_transaksi.like(q))
         )
 
     if status_filter in ["Antrian", "Diproses", "Siap Diambil", "Selesai"]:
-        orders = orders.filter(Transaksi.status_laundry == _model_status(status_filter))
-    orders = orders.all()
+        query = query.filter(Transaksi.status_laundry == _model_status(status_filter))
+
+    orders = query.all()
     result = []
     for transaksi in orders:
-        pelanggan = Pelanggan.query.get(transaksi.pelanggan_id)
+        pelanggan = transaksi.pelanggan  # sudah di-load, tidak ada query tambahan
         result.append({
             "id": transaksi.id_transaksi,
             "kode": getattr(transaksi, "kode_transaksi", transaksi.id_transaksi),
@@ -934,10 +943,16 @@ def pembayaran():
         except ValueError:
             pass
 
-    orders = query.order_by(Transaksi.tanggal.desc()).all()
+    # Gunakan selectinload agar tidak ada N+1 query per baris
+    orders = (
+        query
+        .options(selectinload(Transaksi.pelanggan))
+        .order_by(Transaksi.tanggal.desc())
+        .all()
+    )
     result = []
     for transaksi in orders:
-        pelanggan = Pelanggan.query.get(transaksi.pelanggan_id)
+        pelanggan = transaksi.pelanggan  # sudah di-load, tidak ada query tambahan
         subtotal = getattr(transaksi, 'subtotal', 0) or 0
         total = getattr(transaksi, 'total', 0) or 0
         discount = subtotal - total if subtotal and total else Decimal("0")
@@ -990,8 +1005,6 @@ def api_qris_generate():
     data = request.json or {}
     amount = float(data.get("amount", 0))
     
-    import urllib.parse
-    from flask import url_for
     # Generate a dummy QRIS payload pointing to our simulation page
     success_url = url_for('karyawan.api_qris_success', amount=int(amount), _external=True)
     encoded_data = urllib.parse.quote(success_url)

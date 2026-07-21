@@ -38,7 +38,7 @@ class Transaksi(db.Model):
         "DetailTransaksi",
         back_populates="transaksi",
         foreign_keys="DetailTransaksi.transaksi_id_transaksi",
-        lazy="dynamic",
+        lazy="select",
         cascade="all, delete-orphan",
         passive_deletes=True,
     )

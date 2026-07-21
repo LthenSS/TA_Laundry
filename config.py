@@ -70,6 +70,16 @@ class Config:
 
     SQLALCHEMY_DATABASE_URI = _build_database_uri()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # Connection pool optimization — penting untuk Vercel + TiDB Cloud
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_pre_ping": True,      # Cek koneksi sebelum dipakai, hindari "stale connection"
+        "pool_recycle": 1800,       # Recycle koneksi tiap 30 menit
+        "pool_size": 5,             # Jumlah koneksi yang disimpan di pool
+        "max_overflow": 10,         # Koneksi extra saat pool penuh
+        "connect_args": {
+            "connect_timeout": 10,  # Timeout koneksi 10 detik
+        },
+    }
 
     WHATSAPP_API_URL = "https://api.fonnte.com/send"
     WHATSAPP_API_KEY = "oUhJEJK4hV82mvrDHGyp"
