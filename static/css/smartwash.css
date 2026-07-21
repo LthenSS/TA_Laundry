@@ -213,7 +213,7 @@ body {
 }
 
 .sw-sidebar {
-    min-height: 100vh;
+    height: 100vh;
     background: var(--sw-cyan);
     border-right: 1px solid #9cb9bf;
     position: sticky;
@@ -833,7 +833,7 @@ body {
 }
 
 .sw-kasir-sidebar {
-    min-height: 100vh;
+    height: 100vh;
     background: #86d3e2;
     border-right: 1px solid #aab8bb;
     position: sticky;
