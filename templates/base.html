@@ -79,23 +79,33 @@
         document.addEventListener('DOMContentLoaded', function() {
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
+                    const Toast = Swal.mixin({
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3500,
+                        timerProgressBar: true,
+                        didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer);
+                            toast.addEventListener('mouseleave', Swal.resumeTimer);
+                        }
+                    });
+
                     {% for category, message in messages %}
-                        {% if 'WhatsApp' in message or 'whatsapp' in message|lower %}
+                        {% set icon = "success" if category == "success" else "error" if category == "danger" else "warning" if category == "warning" else "info" %}
+                        {% if 'WhatsApp' in message or 'whatsapp' in message|lower or message|length > 60 %}
                             Swal.fire({
-                                icon: '{{ "success" if category == "success" else "error" if category == "danger" else "info" }}',
-                                title: 'Notifikasi',
+                                icon: '{{ icon }}',
+                                title: 'Informasi',
                                 text: '{{ message }}',
-                                confirmButtonText: 'OK'
+                                confirmButtonText: 'OK',
+                                confirmButtonColor: '#127dae'
                             });
                         {% else %}
-                            // Fallback to basic alert for other messages, inserted at the top of content
-                            const alertHtml = `
-                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                                    {{ message }}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
-                            `;
-                            document.querySelector('.sw-content').insertAdjacentHTML('afterbegin', alertHtml);
+                            Toast.fire({
+                                icon: '{{ icon }}',
+                                title: '{{ message }}'
+                            });
                         {% endif %}
                     {% endfor %}
                 {% endif %}

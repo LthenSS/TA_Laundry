@@ -95,17 +95,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Show toast if server provided a message
-    var toastTrigger = document.getElementById('payment-toast');
-    if (toastTrigger) {
-        var msg = toastTrigger.getAttribute('data-message');
-        if (msg) {
-            document.getElementById('paymentToastBody').textContent = msg;
-            var toastEl = document.getElementById('paymentToast');
-            var toast = new bootstrap.Toast(toastEl);
-            toast.show();
-        }
-    }
 
     function formatCurrency(value) {
         try {
