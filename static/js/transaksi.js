@@ -269,6 +269,19 @@ document.addEventListener('DOMContentLoaded', () => {
         totalText.textContent = formatRupiah(finalTotal);
         promoName.textContent = data.promo ? `${data.promo.nama} (${data.promo.nilai})` : 'Tidak ada promo';
 
+        // Update Breakdown UI
+        if (selectedOption && selectedOption.value) {
+            const summaryBreakdown = document.getElementById('summaryBreakdown');
+            if (summaryBreakdown) summaryBreakdown.classList.remove('d-none');
+            const summaryLayananName = document.getElementById('summaryLayananName');
+            const summaryLayananPrice = document.getElementById('summaryLayananPrice');
+            if (summaryLayananName) summaryLayananName.textContent = `${selectedOption.text.split(' - ')[0]} - ${beratInput.value || 0} Kg`;
+            if (summaryLayananPrice) summaryLayananPrice.textContent = formatRupiah(subtotal);
+        } else {
+            const summaryBreakdown = document.getElementById('summaryBreakdown');
+            if (summaryBreakdown) summaryBreakdown.classList.add('d-none');
+        }
+
         const canSubmit = !!pelangganIdInput.value && !!layananSelect.value && (parseFloat(beratInput.value) || 0) > 0 && (!redeemPointCheckbox.checked || redeemValidation.valid);
         submitTransactionBtn.disabled = !canSubmit;
         if (!canSubmit && redeemPointCheckbox.checked) {
@@ -288,13 +301,39 @@ document.addEventListener('DOMContentLoaded', () => {
     // ---- ADD-ON LOGIC ----
     function calculateAddonTotal() {
         let total = 0;
+        const summaryAddonList = document.getElementById('summaryAddonList');
+        const summaryAddonContainer = document.getElementById('summaryAddonContainer');
+        if (summaryAddonList) summaryAddonList.innerHTML = '';
+        let hasAddon = false;
+
         document.querySelectorAll('.addon-checkbox:checked').forEach(cb => {
+            hasAddon = true;
             const harga = parseFloat(cb.dataset.harga || 0);
             const addonId = cb.value;
+            const nama = cb.dataset.nama || `Add-on ${addonId}`;
             const qtyInput = document.querySelector(`.addon-qty[data-addon-id='${addonId}']`);
             const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1;
-            total += harga * qty;
+            const sub = harga * qty;
+            total += sub;
+
+            if (summaryAddonList) {
+                summaryAddonList.innerHTML += `
+                    <div class="d-flex justify-content-between text-muted small mb-1" style="padding-left: 10px;">
+                        <span>- ${nama} (x${qty})</span>
+                        <strong>${formatRupiah(sub)}</strong>
+                    </div>
+                `;
+            }
         });
+
+        if (summaryAddonContainer) {
+            if (hasAddon) {
+                summaryAddonContainer.classList.remove('d-none');
+            } else {
+                summaryAddonContainer.classList.add('d-none');
+            }
+        }
+
         const addonTotalEl = document.getElementById('addonTotal');
         if (addonTotalEl) addonTotalEl.textContent = formatRupiah(total);
         return total;

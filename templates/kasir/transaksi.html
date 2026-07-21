@@ -195,6 +195,21 @@
 
     <aside class="sw-order-summary">
         <h2><i class="bi bi-cart4"></i> Data Pesanan</h2>
+        
+        <!-- Rincian Pesanan -->
+        <div id="summaryBreakdown" class="mb-3 pb-3 border-bottom d-none">
+            <h6 class="text-muted fw-bold mb-2">Rincian Layanan:</h6>
+            <div class="d-flex justify-content-between small mb-1">
+                <span id="summaryLayananName">-</span>
+                <strong id="summaryLayananPrice">Rp 0</strong>
+            </div>
+            
+            <div id="summaryAddonContainer" class="mt-3 d-none">
+                <h6 class="text-muted fw-bold mb-2">Tambahan (Add-On):</h6>
+                <div id="summaryAddonList"></div>
+            </div>
+        </div>
+
         <div class="sw-summary-bottom">
             <div class="sw-summary-line"><span>Subtotal</span><strong id="subtotalText">Rp 0</strong></div>
             <div class="sw-summary-line discount"><span>Diskon (Promo)</span><strong id="discountText">- Rp 0</strong></div>
