@@ -973,6 +973,8 @@ body {
 
 .sw-kasir-content {
     padding: 52px 40px 44px;
+    display: flex;
+    flex-direction: column;
 }
 
 .sw-kasir-welcome {
@@ -1193,12 +1195,15 @@ body {
 .sw-kasir-order {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 41%;
-    min-height: calc(100vh - 104px - 96px);
+    height: calc(100vh - 96px);
     margin: -52px -40px -44px;
+    overflow: hidden;
 }
 
 .sw-order-form {
     padding: 38px 42px 48px;
+    overflow-y: auto;
+    height: 100%;
 }
 
 .sw-order-summary {
@@ -1206,10 +1211,7 @@ body {
     padding: 38px 46px;
     display: flex;
     flex-direction: column;
-    position: sticky;
-    top: 0;
-    align-self: start;
-    height: 100vh;
+    height: 100%;
     overflow-y: auto;
 }
 
