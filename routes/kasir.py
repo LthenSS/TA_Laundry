@@ -29,11 +29,11 @@ kasir_bp = Blueprint("karyawan", __name__, url_prefix="/karyawan")
 def _status_class(status):
     # Map model enum values to Bootstrap badge classes
     return {
-        "Antrian": "bg-secondary",
-        "Diproses": "bg-primary",
+        "Antrian": "bg-secondary text-white",
+        "Diproses": "bg-primary text-white",
         "Siap Diambil": "bg-warning text-dark",
-        "Selesai": "bg-success",
-    }.get(status, "bg-secondary")
+        "Selesai": "bg-success text-white",
+    }.get(status, "bg-secondary text-white")
 
 
 def _display_status(status):
